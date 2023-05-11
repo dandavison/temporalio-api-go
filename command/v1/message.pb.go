@@ -274,8 +274,7 @@ type StartTimerCommandAttributes struct {
 	// How long until the timer fires, producing a `TIMER_FIRED` event.
 	//
 	// (-- api-linter: core::0140::prepositions=disabled
-	//
-	//	aip.dev/not-precedent: "to" is used to indicate interval. --)
+	//     aip.dev/not-precedent: "to" is used to indicate interval. --)
 	StartToFireTimeout *time.Duration `protobuf:"bytes,2,opt,name=start_to_fire_timeout,json=startToFireTimeout,proto3,stdduration" json:"start_to_fire_timeout,omitempty"`
 }
 

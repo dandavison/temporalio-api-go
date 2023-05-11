@@ -499,6 +499,202 @@ func (m *CompatibleVersionSet) GetBuildIds() []string {
 	return nil
 }
 
+// Reachability of tasks for a worker on a single task queue.
+type TaskQueueReachability struct {
+	TaskQueue string `protobuf:"bytes,1,opt,name=task_queue,json=taskQueue,proto3" json:"task_queue,omitempty"`
+	// Task reachability for a worker in a single task queue.
+	// See the TaskReachability docstring for information about each enum variant.
+	// If reachability is empty, this worker is considered unreachable in this task queue.
+	Reachability []v1.TaskReachability `protobuf:"varint,2,rep,packed,name=reachability,proto3,enum=temporal.api.enums.v1.TaskReachability" json:"reachability,omitempty"`
+}
+
+func (m *TaskQueueReachability) Reset()      { *m = TaskQueueReachability{} }
+func (*TaskQueueReachability) ProtoMessage() {}
+func (*TaskQueueReachability) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c60437e4ccf51d94, []int{8}
+}
+func (m *TaskQueueReachability) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TaskQueueReachability) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TaskQueueReachability.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *TaskQueueReachability) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TaskQueueReachability.Merge(m, src)
+}
+func (m *TaskQueueReachability) XXX_Size() int {
+	return m.Size()
+}
+func (m *TaskQueueReachability) XXX_DiscardUnknown() {
+	xxx_messageInfo_TaskQueueReachability.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TaskQueueReachability proto.InternalMessageInfo
+
+func (m *TaskQueueReachability) GetTaskQueue() string {
+	if m != nil {
+		return m.TaskQueue
+	}
+	return ""
+}
+
+func (m *TaskQueueReachability) GetReachability() []v1.TaskReachability {
+	if m != nil {
+		return m.Reachability
+	}
+	return nil
+}
+
+// Reachability of tasks for a worker by build id, in one or more task queues.
+type BuildIdReachability struct {
+	// A build id or empty if unversioned.
+	BuildId string `protobuf:"bytes,1,opt,name=build_id,json=buildId,proto3" json:"build_id,omitempty"`
+	// Reachability per task queue.
+	TaskQueueReachability []*TaskQueueReachability `protobuf:"bytes,2,rep,name=task_queue_reachability,json=taskQueueReachability,proto3" json:"task_queue_reachability,omitempty"`
+}
+
+func (m *BuildIdReachability) Reset()      { *m = BuildIdReachability{} }
+func (*BuildIdReachability) ProtoMessage() {}
+func (*BuildIdReachability) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c60437e4ccf51d94, []int{9}
+}
+func (m *BuildIdReachability) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *BuildIdReachability) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_BuildIdReachability.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *BuildIdReachability) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BuildIdReachability.Merge(m, src)
+}
+func (m *BuildIdReachability) XXX_Size() int {
+	return m.Size()
+}
+func (m *BuildIdReachability) XXX_DiscardUnknown() {
+	xxx_messageInfo_BuildIdReachability.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_BuildIdReachability proto.InternalMessageInfo
+
+func (m *BuildIdReachability) GetBuildId() string {
+	if m != nil {
+		return m.BuildId
+	}
+	return ""
+}
+
+func (m *BuildIdReachability) GetTaskQueueReachability() []*TaskQueueReachability {
+	if m != nil {
+		return m.TaskQueueReachability
+	}
+	return nil
+}
+
+// Scope of task reachability for a reachability query.
+type TaskReachabilityScope struct {
+	// Types that are valid to be assigned to Variant:
+	//
+	//	*TaskReachabilityScope_Namespace
+	//	*TaskReachabilityScope_TaskQueue
+	Variant isTaskReachabilityScope_Variant `protobuf_oneof:"variant"`
+}
+
+func (m *TaskReachabilityScope) Reset()      { *m = TaskReachabilityScope{} }
+func (*TaskReachabilityScope) ProtoMessage() {}
+func (*TaskReachabilityScope) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c60437e4ccf51d94, []int{10}
+}
+func (m *TaskReachabilityScope) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TaskReachabilityScope) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TaskReachabilityScope.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *TaskReachabilityScope) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TaskReachabilityScope.Merge(m, src)
+}
+func (m *TaskReachabilityScope) XXX_Size() int {
+	return m.Size()
+}
+func (m *TaskReachabilityScope) XXX_DiscardUnknown() {
+	xxx_messageInfo_TaskReachabilityScope.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TaskReachabilityScope proto.InternalMessageInfo
+
+type isTaskReachabilityScope_Variant interface {
+	isTaskReachabilityScope_Variant()
+	Equal(interface{}) bool
+	MarshalTo([]byte) (int, error)
+	Size() int
+}
+
+type TaskReachabilityScope_Namespace struct {
+	Namespace *types.Empty `protobuf:"bytes,1,opt,name=namespace,proto3,oneof" json:"namespace,omitempty"`
+}
+type TaskReachabilityScope_TaskQueue struct {
+	TaskQueue string `protobuf:"bytes,2,opt,name=task_queue,json=taskQueue,proto3,oneof" json:"task_queue,omitempty"`
+}
+
+func (*TaskReachabilityScope_Namespace) isTaskReachabilityScope_Variant() {}
+func (*TaskReachabilityScope_TaskQueue) isTaskReachabilityScope_Variant() {}
+
+func (m *TaskReachabilityScope) GetVariant() isTaskReachabilityScope_Variant {
+	if m != nil {
+		return m.Variant
+	}
+	return nil
+}
+
+func (m *TaskReachabilityScope) GetNamespace() *types.Empty {
+	if x, ok := m.GetVariant().(*TaskReachabilityScope_Namespace); ok {
+		return x.Namespace
+	}
+	return nil
+}
+
+func (m *TaskReachabilityScope) GetTaskQueue() string {
+	if x, ok := m.GetVariant().(*TaskReachabilityScope_TaskQueue); ok {
+		return x.TaskQueue
+	}
+	return ""
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*TaskReachabilityScope) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*TaskReachabilityScope_Namespace)(nil),
+		(*TaskReachabilityScope_TaskQueue)(nil),
+	}
+}
+
 func init() {
 	proto.RegisterType((*TaskQueue)(nil), "temporal.api.taskqueue.v1.TaskQueue")
 	proto.RegisterType((*TaskQueueMetadata)(nil), "temporal.api.taskqueue.v1.TaskQueueMetadata")
@@ -508,6 +704,9 @@ func init() {
 	proto.RegisterType((*PollerInfo)(nil), "temporal.api.taskqueue.v1.PollerInfo")
 	proto.RegisterType((*StickyExecutionAttributes)(nil), "temporal.api.taskqueue.v1.StickyExecutionAttributes")
 	proto.RegisterType((*CompatibleVersionSet)(nil), "temporal.api.taskqueue.v1.CompatibleVersionSet")
+	proto.RegisterType((*TaskQueueReachability)(nil), "temporal.api.taskqueue.v1.TaskQueueReachability")
+	proto.RegisterType((*BuildIdReachability)(nil), "temporal.api.taskqueue.v1.BuildIdReachability")
+	proto.RegisterType((*TaskReachabilityScope)(nil), "temporal.api.taskqueue.v1.TaskReachabilityScope")
 }
 
 func init() {
@@ -515,62 +714,72 @@ func init() {
 }
 
 var fileDescriptor_c60437e4ccf51d94 = []byte{
-	// 877 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x54, 0x41, 0x6f, 0x23, 0x35,
-	0x14, 0x8e, 0x93, 0xec, 0xd2, 0x3a, 0x74, 0xdb, 0x8e, 0x16, 0xd4, 0xa4, 0xcb, 0x6c, 0x89, 0xaa,
-	0x52, 0x24, 0x34, 0x51, 0xba, 0x17, 0x14, 0x0e, 0xa8, 0x29, 0x48, 0x9b, 0x85, 0xa2, 0x30, 0x89,
-	0x82, 0xd8, 0xcb, 0xc8, 0x33, 0x7e, 0x9b, 0x5a, 0x33, 0x63, 0xcf, 0x8e, 0x3d, 0x69, 0x7b, 0xe3,
-	0x1f, 0xb0, 0x47, 0x7e, 0x02, 0xe2, 0x97, 0x80, 0xc4, 0xa1, 0xc7, 0xbd, 0x41, 0xd3, 0x0b, 0xe2,
-	0xc2, 0xfe, 0x04, 0x64, 0xcf, 0x74, 0xd2, 0x92, 0xad, 0xb8, 0xd9, 0xef, 0x7b, 0x9f, 0xed, 0xf7,
-	0x7d, 0xef, 0x19, 0x7f, 0xa4, 0x20, 0x4e, 0x44, 0x4a, 0xa2, 0x0e, 0x49, 0x58, 0x47, 0x11, 0x19,
-	0xbe, 0xcc, 0x20, 0x83, 0xce, 0xac, 0xdb, 0x89, 0x41, 0x4a, 0x32, 0x05, 0x27, 0x49, 0x85, 0x12,
-	0x56, 0xf3, 0x3a, 0xd1, 0x21, 0x09, 0x73, 0xca, 0x44, 0x67, 0xd6, 0x6d, 0xd9, 0x53, 0x21, 0xa6,
-	0x11, 0x74, 0x4c, 0xa2, 0x9f, 0xbd, 0xe8, 0xd0, 0x2c, 0x25, 0x8a, 0x09, 0x9e, 0x53, 0x5b, 0x8f,
-	0xff, 0x8b, 0x2b, 0x16, 0x83, 0x54, 0x24, 0x4e, 0x8a, 0x84, 0xa5, 0x03, 0x4e, 0x53, 0x92, 0x24,
-	0x90, 0xca, 0x02, 0xff, 0x90, 0x42, 0x02, 0x9c, 0x02, 0x0f, 0x18, 0xc8, 0xce, 0x54, 0x4c, 0x85,
-	0x89, 0x9b, 0x55, 0x91, 0xb2, 0x77, 0xab, 0x0e, 0xe0, 0x59, 0x2c, 0x75, 0x0d, 0xfa, 0x9d, 0x5e,
-	0xfe, 0xd0, 0x3c, 0x6f, 0xf7, 0x56, 0x5e, 0x20, 0xe2, 0x58, 0xf0, 0xa5, 0x62, 0xdb, 0xdf, 0xe3,
-	0xd5, 0x31, 0x91, 0xe1, 0xb7, 0x9a, 0x68, 0x59, 0xb8, 0xce, 0x49, 0x0c, 0x5b, 0x68, 0x07, 0xed,
-	0xaf, 0xba, 0x66, 0x6d, 0x7d, 0x8a, 0xeb, 0x21, 0xe3, 0x74, 0xab, 0xba, 0x83, 0xf6, 0x1f, 0x1c,
-	0xec, 0x3a, 0xb7, 0xc4, 0x31, 0xb7, 0x3b, 0xb3, 0xae, 0x53, 0x9e, 0xf1, 0x15, 0xe3, 0xd4, 0x35,
-	0x8c, 0xb6, 0x8f, 0x37, 0xcb, 0xf0, 0x31, 0x28, 0x42, 0x89, 0x22, 0xd6, 0x31, 0x7e, 0x18, 0x93,
-	0x33, 0x4f, 0xbf, 0x56, 0x7a, 0x09, 0xa4, 0x9e, 0x84, 0x40, 0x70, 0x6a, 0xae, 0x6c, 0x1c, 0x3c,
-	0x72, 0x72, 0x7d, 0x9c, 0x6b, 0x7d, 0x9c, 0x2f, 0x44, 0xe6, 0x47, 0x30, 0x21, 0x51, 0x06, 0xee,
-	0x66, 0x4c, 0xce, 0xf4, 0x89, 0x72, 0x08, 0xe9, 0xc8, 0xd0, 0xda, 0xff, 0x20, 0xbc, 0x5e, 0x5e,
-	0x32, 0x52, 0x44, 0x65, 0xd2, 0xfa, 0x04, 0x5b, 0x3e, 0x09, 0xc2, 0x48, 0x4c, 0xbd, 0x40, 0x64,
-	0x5c, 0x79, 0x27, 0x8c, 0x2b, 0x73, 0x41, 0xcd, 0xdd, 0x28, 0x90, 0x23, 0x0d, 0x3c, 0x65, 0x5c,
-	0x59, 0x1f, 0x60, 0x9c, 0x02, 0xa1, 0x5e, 0x04, 0x33, 0x88, 0x4c, 0x95, 0x35, 0x77, 0x55, 0x47,
-	0xbe, 0xd6, 0x01, 0x6b, 0x1b, 0xaf, 0x92, 0x20, 0x2c, 0xd0, 0x9a, 0x41, 0x57, 0x48, 0x10, 0xe6,
-	0xe0, 0x1e, 0x5e, 0x4f, 0x89, 0x82, 0x9b, 0x75, 0xd4, 0x77, 0xd0, 0x3e, 0x72, 0xd7, 0x74, 0xb8,
-	0x7c, 0xa5, 0xf5, 0x0c, 0xaf, 0x19, 0x7b, 0x18, 0xf5, 0xfc, 0x48, 0x04, 0xe1, 0xd6, 0x3d, 0x53,
-	0xed, 0x9e, 0x73, 0x67, 0xa7, 0x19, 0x41, 0x07, 0xb4, 0xaf, 0xb3, 0xdd, 0x86, 0x5a, 0x6c, 0xda,
-	0x9f, 0xe3, 0xc6, 0x0d, 0xcc, 0x6a, 0xe2, 0x15, 0xa9, 0x48, 0xaa, 0x3c, 0x46, 0x8b, 0x12, 0xdf,
-	0x31, 0xfb, 0x01, 0xb5, 0xde, 0xc3, 0xf7, 0x81, 0x53, 0x0d, 0xe4, 0x55, 0xdd, 0x03, 0x4e, 0x07,
-	0xb4, 0x3d, 0xc1, 0xad, 0x52, 0xb1, 0x21, 0x49, 0x15, 0xd3, 0xfd, 0x5b, 0xfa, 0xb3, 0x81, 0x6b,
-	0x21, 0x9c, 0x17, 0x1d, 0xa0, 0x97, 0xba, 0x48, 0x71, 0xca, 0x21, 0xf5, 0x4e, 0x84, 0x54, 0x9e,
-	0xe9, 0x8f, 0xaa, 0x41, 0xd7, 0x4c, 0xf8, 0xa9, 0x90, 0xea, 0x1b, 0x12, 0x43, 0xfb, 0xc7, 0x2a,
-	0xc6, 0x43, 0x11, 0x45, 0x90, 0x0e, 0xf8, 0x0b, 0x61, 0x3d, 0xc3, 0x1b, 0x11, 0x91, 0xca, 0x23,
-	0x41, 0x00, 0x52, 0x7a, 0x7a, 0x10, 0x0a, 0x93, 0x5b, 0x4b, 0x26, 0x8f, 0xaf, 0xa7, 0xa4, 0x5f,
-	0x7f, 0xf5, 0xc7, 0x63, 0xe4, 0x3e, 0xd0, 0xcc, 0x43, 0x43, 0xd4, 0x90, 0xd5, 0xc2, 0x2b, 0x8c,
-	0x02, 0x57, 0x4c, 0x9d, 0x17, 0x77, 0x97, 0xfb, 0xb7, 0x79, 0x50, 0x7b, 0x9b, 0x07, 0x2f, 0xf1,
-	0xf6, 0xa9, 0x48, 0x43, 0x48, 0xbd, 0x19, 0xa4, 0x92, 0x09, 0xee, 0x05, 0x24, 0x21, 0x3e, 0x8b,
-	0x98, 0x62, 0x20, 0x8d, 0x6f, 0x8d, 0x83, 0xee, 0x6d, 0x47, 0xf2, 0xa1, 0xd1, 0x76, 0x7c, 0x67,
-	0xa8, 0x93, 0x9c, 0x79, 0x74, 0x83, 0xe8, 0x36, 0x4f, 0xef, 0x82, 0xda, 0xbf, 0x21, 0xdc, 0x1c,
-	0x29, 0x16, 0x84, 0xe7, 0x5f, 0x9e, 0x41, 0x90, 0x69, 0x9d, 0x0f, 0x95, 0x4a, 0x99, 0x9f, 0x29,
-	0x90, 0xd6, 0x10, 0x6f, 0x16, 0x0f, 0x5a, 0x8c, 0x6e, 0xa1, 0xd0, 0xee, 0xff, 0x34, 0x86, 0xf1,
-	0xce, 0x5d, 0xcf, 0xe9, 0x8b, 0xf1, 0x7d, 0x8e, 0x9b, 0x32, 0x38, 0x01, 0x9a, 0x45, 0xe0, 0x29,
-	0xe1, 0xe5, 0x7d, 0xa1, 0x85, 0x17, 0x99, 0x32, 0xba, 0x35, 0x0e, 0x9a, 0xcb, 0x03, 0x56, 0xfc,
-	0x60, 0xfd, 0xfa, 0x4f, 0x5a, 0xfa, 0xf7, 0xaf, 0x4f, 0x18, 0x8b, 0x91, 0xe6, 0x8f, 0x73, 0x7a,
-	0xfb, 0x09, 0x7e, 0x78, 0x24, 0xe2, 0x84, 0x28, 0xa6, 0xc7, 0x31, 0x2f, 0x76, 0x04, 0x4a, 0xcf,
-	0x87, 0x9f, 0xb1, 0x48, 0xb7, 0x99, 0xdc, 0x42, 0x3b, 0x35, 0xed, 0x8d, 0x09, 0x0c, 0xa8, 0xec,
-	0xff, 0x8e, 0x2e, 0x2e, 0xed, 0xca, 0xeb, 0x4b, 0xbb, 0xf2, 0xe6, 0xd2, 0x46, 0x3f, 0xcc, 0x6d,
-	0xf4, 0xf3, 0xdc, 0x46, 0xbf, 0xce, 0x6d, 0x74, 0x31, 0xb7, 0xd1, 0x9f, 0x73, 0x1b, 0xfd, 0x35,
-	0xb7, 0x2b, 0x6f, 0xe6, 0x36, 0x7a, 0x75, 0x65, 0x57, 0x2e, 0xae, 0xec, 0xca, 0xeb, 0x2b, 0xbb,
-	0x82, 0x1f, 0x31, 0x71, 0xb7, 0x00, 0xfd, 0x77, 0x8f, 0xf3, 0x0f, 0x6c, 0xa8, 0x2b, 0x18, 0xa2,
-	0xe7, 0x1f, 0x4f, 0x6f, 0x64, 0x33, 0xb1, 0xf4, 0xbb, 0x7f, 0x56, 0x6e, 0x7e, 0xa9, 0x6e, 0x8f,
-	0x8b, 0x44, 0x26, 0x9c, 0xc3, 0x84, 0x2d, 0xc4, 0x74, 0x26, 0xdd, 0xbf, 0xab, 0xf6, 0x02, 0xed,
-	0xf5, 0x0e, 0x13, 0xd6, 0xeb, 0x95, 0x78, 0xaf, 0x37, 0xe9, 0xfa, 0xf7, 0x8d, 0x68, 0x4f, 0xfe,
-	0x0d, 0x00, 0x00, 0xff, 0xff, 0xd1, 0xcc, 0xf7, 0x8c, 0x4a, 0x06, 0x00, 0x00,
+	// 1025 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x55, 0x4f, 0x6f, 0xe3, 0x44,
+	0x14, 0xcf, 0x24, 0xdd, 0x6d, 0x33, 0xd9, 0xfe, 0x33, 0xdb, 0xa5, 0x69, 0x17, 0xb7, 0x58, 0x55,
+	0xb7, 0x48, 0xc8, 0x21, 0x59, 0x09, 0xa1, 0x70, 0x40, 0x4d, 0x59, 0xa9, 0xdd, 0xa5, 0x28, 0x38,
+	0x55, 0x11, 0x7b, 0xb1, 0x26, 0xf6, 0xdb, 0x74, 0xe4, 0x3f, 0xe3, 0xf5, 0x8c, 0xd3, 0x56, 0x5c,
+	0x90, 0xf8, 0x00, 0xec, 0x11, 0xf1, 0x09, 0x10, 0x9f, 0x04, 0x24, 0x0e, 0x3d, 0xee, 0x0d, 0x9a,
+	0x5e, 0x10, 0x17, 0xf6, 0x23, 0xa0, 0x19, 0x3b, 0x4e, 0xd2, 0xb4, 0xb0, 0x37, 0xfb, 0xfd, 0xde,
+	0x9b, 0x79, 0xbf, 0xdf, 0xef, 0x3d, 0x1b, 0x3f, 0x12, 0x10, 0x44, 0x2c, 0x26, 0x7e, 0x8d, 0x44,
+	0xb4, 0x26, 0x08, 0xf7, 0x5e, 0x26, 0x90, 0x40, 0xad, 0x5f, 0xaf, 0x05, 0xc0, 0x39, 0xe9, 0x81,
+	0x19, 0xc5, 0x4c, 0x30, 0xad, 0x3a, 0x4c, 0x34, 0x49, 0x44, 0xcd, 0x3c, 0xd1, 0xec, 0xd7, 0xd7,
+	0xf4, 0x1e, 0x63, 0x3d, 0x1f, 0x6a, 0x2a, 0xb1, 0x9b, 0xbc, 0xa8, 0xb9, 0x49, 0x4c, 0x04, 0x65,
+	0x61, 0x5a, 0xba, 0xb6, 0x7e, 0x1d, 0x87, 0x20, 0x12, 0xe7, 0x19, 0xb8, 0x71, 0x1d, 0x14, 0x34,
+	0x00, 0x2e, 0x48, 0x10, 0x65, 0x09, 0x53, 0xa7, 0x9f, 0xc6, 0x24, 0x8a, 0x20, 0xe6, 0x19, 0xfe,
+	0xbe, 0x0b, 0x11, 0x84, 0x2e, 0x84, 0x0e, 0x05, 0x5e, 0xeb, 0xb1, 0x1e, 0x53, 0x71, 0xf5, 0x94,
+	0xa5, 0x6c, 0x4f, 0x90, 0x84, 0x30, 0x09, 0xb8, 0x24, 0x28, 0x49, 0xd8, 0x29, 0x8b, 0x34, 0x6f,
+	0x6b, 0x22, 0xcf, 0x61, 0x41, 0xc0, 0xc2, 0x29, 0x25, 0x8c, 0x6f, 0x70, 0xf9, 0x88, 0x70, 0xef,
+	0x2b, 0x59, 0xa8, 0x69, 0x78, 0x26, 0x24, 0x01, 0xac, 0xa2, 0x4d, 0xb4, 0x53, 0xb6, 0xd4, 0xb3,
+	0xf6, 0x09, 0x9e, 0xf1, 0x68, 0xe8, 0xae, 0x16, 0x37, 0xd1, 0xce, 0x42, 0x63, 0xcb, 0x9c, 0x50,
+	0x4e, 0xdd, 0x6e, 0xf6, 0xeb, 0x66, 0x7e, 0xc6, 0x33, 0x1a, 0xba, 0x96, 0xaa, 0x30, 0xba, 0x78,
+	0x39, 0x0f, 0x1f, 0x82, 0x20, 0x2e, 0x11, 0x44, 0x3b, 0xc4, 0xf7, 0x03, 0x72, 0x66, 0xcb, 0x6e,
+	0xb9, 0x1d, 0x41, 0x6c, 0x73, 0x70, 0x58, 0xe8, 0xaa, 0x2b, 0x2b, 0x8d, 0x87, 0x66, 0xaa, 0x8f,
+	0x39, 0xd4, 0xc7, 0xfc, 0x9c, 0x25, 0x5d, 0x1f, 0x8e, 0x89, 0x9f, 0x80, 0xb5, 0x1c, 0x90, 0x33,
+	0x79, 0x22, 0x6f, 0x43, 0xdc, 0x51, 0x65, 0xc6, 0x3f, 0x08, 0x2f, 0xe6, 0x97, 0x74, 0x04, 0x11,
+	0x09, 0xd7, 0x3e, 0xc4, 0x5a, 0x97, 0x38, 0x9e, 0xcf, 0x7a, 0xb6, 0xc3, 0x92, 0x50, 0xd8, 0x27,
+	0x34, 0x14, 0xea, 0x82, 0x92, 0xb5, 0x94, 0x21, 0x7b, 0x12, 0xd8, 0xa7, 0xa1, 0xd0, 0xde, 0xc3,
+	0x38, 0x06, 0xe2, 0xda, 0x3e, 0xf4, 0xc1, 0x57, 0x2c, 0x4b, 0x56, 0x59, 0x46, 0xbe, 0x90, 0x01,
+	0x6d, 0x1d, 0x97, 0x89, 0xe3, 0x65, 0x68, 0x49, 0xa1, 0x73, 0xc4, 0xf1, 0x52, 0x70, 0x1b, 0x2f,
+	0xc6, 0x44, 0xc0, 0x38, 0x8f, 0x99, 0x4d, 0xb4, 0x83, 0xac, 0x79, 0x19, 0xce, 0xbb, 0xd4, 0x9e,
+	0xe2, 0x79, 0x65, 0x0f, 0x75, 0xed, 0xae, 0xcf, 0x1c, 0x6f, 0xf5, 0x8e, 0x62, 0xbb, 0x6d, 0xde,
+	0x3a, 0x86, 0x4a, 0xd0, 0x03, 0xb7, 0x25, 0xb3, 0xad, 0x8a, 0x18, 0xbd, 0x18, 0x9f, 0xe1, 0xca,
+	0x18, 0xa6, 0x55, 0xf1, 0x1c, 0x17, 0x24, 0x16, 0x36, 0x75, 0x33, 0x8a, 0xb3, 0xea, 0xfd, 0xc0,
+	0xd5, 0x56, 0xf0, 0x5d, 0x08, 0x5d, 0x09, 0xa4, 0xac, 0xee, 0x40, 0xe8, 0x1e, 0xb8, 0xc6, 0x31,
+	0x5e, 0xcb, 0x15, 0x6b, 0x93, 0x58, 0x50, 0x39, 0xdc, 0xb9, 0x3f, 0x4b, 0xb8, 0xe4, 0xc1, 0x79,
+	0x36, 0x01, 0xf2, 0x51, 0x92, 0x64, 0xa7, 0x21, 0xc4, 0xf6, 0x09, 0xe3, 0xc2, 0x56, 0xf3, 0x51,
+	0x54, 0xe8, 0xbc, 0x0a, 0xef, 0x33, 0x2e, 0xbe, 0x24, 0x01, 0x18, 0x3f, 0x14, 0x31, 0x6e, 0x33,
+	0xdf, 0x87, 0xf8, 0x20, 0x7c, 0xc1, 0xb4, 0xa7, 0x78, 0xc9, 0x27, 0x5c, 0xd8, 0xc4, 0x71, 0x80,
+	0x73, 0x5b, 0x2e, 0x42, 0x66, 0xf2, 0xda, 0x94, 0xc9, 0x47, 0xc3, 0x2d, 0x69, 0xcd, 0xbc, 0xfa,
+	0x63, 0x03, 0x59, 0x0b, 0xb2, 0x72, 0x57, 0x15, 0x4a, 0x48, 0x5b, 0xc3, 0x73, 0xd4, 0x85, 0x50,
+	0x50, 0x71, 0x9e, 0xdd, 0x9d, 0xbf, 0xdf, 0xe4, 0x41, 0xe9, 0x26, 0x0f, 0x5e, 0xe2, 0xf5, 0x53,
+	0x16, 0x7b, 0x10, 0xdb, 0x7d, 0x88, 0x39, 0x65, 0xa1, 0xed, 0x90, 0x88, 0x74, 0xa9, 0x4f, 0x05,
+	0x05, 0xae, 0x7c, 0xab, 0x34, 0xea, 0x93, 0x8e, 0xa4, 0x4b, 0x23, 0xed, 0xf8, 0x5a, 0x95, 0x1e,
+	0xa7, 0x95, 0x7b, 0x63, 0x85, 0x56, 0xf5, 0xf4, 0x36, 0xc8, 0xf8, 0x0d, 0xe1, 0x6a, 0x47, 0x50,
+	0xc7, 0x3b, 0x7f, 0x72, 0x06, 0x4e, 0x22, 0x75, 0xde, 0x15, 0x22, 0xa6, 0xdd, 0x44, 0x00, 0xd7,
+	0xda, 0x78, 0x39, 0x6b, 0x68, 0xb4, 0xba, 0x99, 0x42, 0x5b, 0xff, 0x33, 0x18, 0xca, 0x3b, 0x6b,
+	0x31, 0x2d, 0x1f, 0xad, 0xef, 0x73, 0x5c, 0xe5, 0xce, 0x09, 0xb8, 0x89, 0x0f, 0xb6, 0x60, 0x76,
+	0x3a, 0x17, 0x52, 0x78, 0x96, 0x08, 0xa5, 0x5b, 0xa5, 0x51, 0x9d, 0x5e, 0xb0, 0xec, 0xf3, 0xd6,
+	0x9a, 0xf9, 0x51, 0x4a, 0xff, 0x60, 0x78, 0xc2, 0x11, 0xeb, 0xc8, 0xfa, 0xa3, 0xb4, 0xdc, 0x78,
+	0x8c, 0xef, 0xef, 0xb1, 0x20, 0x22, 0x82, 0xca, 0x75, 0x4c, 0xc9, 0x76, 0x40, 0xc8, 0xfd, 0xe8,
+	0x26, 0xd4, 0x97, 0x63, 0xc6, 0x57, 0xd1, 0x66, 0x49, 0x7a, 0xa3, 0x02, 0x07, 0x2e, 0x37, 0xbe,
+	0x47, 0x78, 0x65, 0xd4, 0x2f, 0x10, 0xe7, 0x24, 0x15, 0xe7, 0x5c, 0x6e, 0xdd, 0x35, 0xd6, 0x65,
+	0xab, 0x2c, 0x72, 0x26, 0xcf, 0xf0, 0xbd, 0x78, 0x2c, 0x7d, 0xb5, 0xb8, 0x59, 0xda, 0x59, 0x68,
+	0x3c, 0xfa, 0x8f, 0x8f, 0xcf, 0xf8, 0xe9, 0xd6, 0x44, 0xb1, 0xf1, 0x13, 0xc2, 0xef, 0xb4, 0xd2,
+	0x96, 0x26, 0x7a, 0xa8, 0xe2, 0xb9, 0x61, 0xeb, 0x59, 0x07, 0xb3, 0x59, 0xe7, 0xda, 0x09, 0x7e,
+	0x77, 0xd4, 0x9e, 0x3d, 0xd5, 0x4a, 0xa5, 0xf1, 0xd1, 0x5b, 0x39, 0x34, 0xde, 0xd3, 0x8a, 0xb8,
+	0x29, 0x6c, 0x7c, 0x9b, 0x2a, 0x34, 0x1e, 0xeb, 0x38, 0x2c, 0x02, 0xed, 0x63, 0x5c, 0x96, 0xbb,
+	0xc6, 0x23, 0xe2, 0x0c, 0xc7, 0xe2, 0xc1, 0x94, 0x79, 0x4f, 0xe4, 0xbf, 0x67, 0xbf, 0x60, 0x8d,
+	0x52, 0xb5, 0x8d, 0x09, 0x65, 0xd5, 0xb6, 0xc8, 0x84, 0xfc, 0xf6, 0x56, 0x19, 0xcf, 0xf6, 0x49,
+	0x4c, 0x49, 0x28, 0x5a, 0xbf, 0xa3, 0x8b, 0x4b, 0xbd, 0xf0, 0xfa, 0x52, 0x2f, 0xbc, 0xb9, 0xd4,
+	0xd1, 0x77, 0x03, 0x1d, 0xfd, 0x3c, 0xd0, 0xd1, 0xaf, 0x03, 0x1d, 0x5d, 0x0c, 0x74, 0xf4, 0xe7,
+	0x40, 0x47, 0x7f, 0x0d, 0xf4, 0xc2, 0x9b, 0x81, 0x8e, 0x5e, 0x5d, 0xe9, 0x85, 0x8b, 0x2b, 0xbd,
+	0xf0, 0xfa, 0x4a, 0x2f, 0xe0, 0x87, 0x94, 0xdd, 0x4e, 0xbf, 0x75, 0xef, 0x30, 0xfd, 0xc1, 0xb4,
+	0x65, 0x93, 0x6d, 0xf4, 0xfc, 0x83, 0xde, 0x58, 0x36, 0x65, 0x53, 0xbf, 0xe6, 0x4f, 0xf3, 0x97,
+	0x5f, 0x8a, 0xeb, 0x47, 0x59, 0x22, 0x65, 0xe6, 0x6e, 0x44, 0x47, 0x52, 0x9a, 0xc7, 0xf5, 0xbf,
+	0x8b, 0xfa, 0x08, 0x6d, 0x36, 0x77, 0x23, 0xda, 0x6c, 0xe6, 0x78, 0xb3, 0x79, 0x5c, 0xef, 0xde,
+	0x55, 0xba, 0x3c, 0xfe, 0x37, 0x00, 0x00, 0xff, 0xff, 0x20, 0xbe, 0x01, 0xa6, 0x07, 0x08, 0x00,
+	0x00,
 }
 
 func (this *TaskQueue) Equal(that interface{}) bool {
@@ -813,6 +1022,148 @@ func (this *CompatibleVersionSet) Equal(that interface{}) bool {
 	}
 	return true
 }
+func (this *TaskQueueReachability) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TaskQueueReachability)
+	if !ok {
+		that2, ok := that.(TaskQueueReachability)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.TaskQueue != that1.TaskQueue {
+		return false
+	}
+	if len(this.Reachability) != len(that1.Reachability) {
+		return false
+	}
+	for i := range this.Reachability {
+		if this.Reachability[i] != that1.Reachability[i] {
+			return false
+		}
+	}
+	return true
+}
+func (this *BuildIdReachability) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*BuildIdReachability)
+	if !ok {
+		that2, ok := that.(BuildIdReachability)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.BuildId != that1.BuildId {
+		return false
+	}
+	if len(this.TaskQueueReachability) != len(that1.TaskQueueReachability) {
+		return false
+	}
+	for i := range this.TaskQueueReachability {
+		if !this.TaskQueueReachability[i].Equal(that1.TaskQueueReachability[i]) {
+			return false
+		}
+	}
+	return true
+}
+func (this *TaskReachabilityScope) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TaskReachabilityScope)
+	if !ok {
+		that2, ok := that.(TaskReachabilityScope)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if that1.Variant == nil {
+		if this.Variant != nil {
+			return false
+		}
+	} else if this.Variant == nil {
+		return false
+	} else if !this.Variant.Equal(that1.Variant) {
+		return false
+	}
+	return true
+}
+func (this *TaskReachabilityScope_Namespace) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TaskReachabilityScope_Namespace)
+	if !ok {
+		that2, ok := that.(TaskReachabilityScope_Namespace)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Namespace.Equal(that1.Namespace) {
+		return false
+	}
+	return true
+}
+func (this *TaskReachabilityScope_TaskQueue) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TaskReachabilityScope_TaskQueue)
+	if !ok {
+		that2, ok := that.(TaskReachabilityScope_TaskQueue)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.TaskQueue != that1.TaskQueue {
+		return false
+	}
+	return true
+}
 func (this *TaskQueue) GoString() string {
 	if this == nil {
 		return "nil"
@@ -911,6 +1262,58 @@ func (this *CompatibleVersionSet) GoString() string {
 	s = append(s, "BuildIds: "+fmt.Sprintf("%#v", this.BuildIds)+",\n")
 	s = append(s, "}")
 	return strings.Join(s, "")
+}
+func (this *TaskQueueReachability) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 6)
+	s = append(s, "&taskqueue.TaskQueueReachability{")
+	s = append(s, "TaskQueue: "+fmt.Sprintf("%#v", this.TaskQueue)+",\n")
+	s = append(s, "Reachability: "+fmt.Sprintf("%#v", this.Reachability)+",\n")
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
+func (this *BuildIdReachability) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 6)
+	s = append(s, "&taskqueue.BuildIdReachability{")
+	s = append(s, "BuildId: "+fmt.Sprintf("%#v", this.BuildId)+",\n")
+	if this.TaskQueueReachability != nil {
+		s = append(s, "TaskQueueReachability: "+fmt.Sprintf("%#v", this.TaskQueueReachability)+",\n")
+	}
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
+func (this *TaskReachabilityScope) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 6)
+	s = append(s, "&taskqueue.TaskReachabilityScope{")
+	if this.Variant != nil {
+		s = append(s, "Variant: "+fmt.Sprintf("%#v", this.Variant)+",\n")
+	}
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
+func (this *TaskReachabilityScope_Namespace) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&taskqueue.TaskReachabilityScope_Namespace{` +
+		`Namespace:` + fmt.Sprintf("%#v", this.Namespace) + `}`}, ", ")
+	return s
+}
+func (this *TaskReachabilityScope_TaskQueue) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&taskqueue.TaskReachabilityScope_TaskQueue{` +
+		`TaskQueue:` + fmt.Sprintf("%#v", this.TaskQueue) + `}`}, ", ")
+	return s
 }
 func valueToGoStringMessage(v interface{}, typ string) string {
 	rv := reflect.ValueOf(v)
@@ -1251,6 +1654,165 @@ func (m *CompatibleVersionSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *TaskQueueReachability) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TaskQueueReachability) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TaskQueueReachability) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Reachability) > 0 {
+		dAtA8 := make([]byte, len(m.Reachability)*10)
+		var j7 int
+		for _, num := range m.Reachability {
+			for num >= 1<<7 {
+				dAtA8[j7] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j7++
+			}
+			dAtA8[j7] = uint8(num)
+			j7++
+		}
+		i -= j7
+		copy(dAtA[i:], dAtA8[:j7])
+		i = encodeVarintMessage(dAtA, i, uint64(j7))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.TaskQueue) > 0 {
+		i -= len(m.TaskQueue)
+		copy(dAtA[i:], m.TaskQueue)
+		i = encodeVarintMessage(dAtA, i, uint64(len(m.TaskQueue)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *BuildIdReachability) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *BuildIdReachability) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *BuildIdReachability) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.TaskQueueReachability) > 0 {
+		for iNdEx := len(m.TaskQueueReachability) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.TaskQueueReachability[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintMessage(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if len(m.BuildId) > 0 {
+		i -= len(m.BuildId)
+		copy(dAtA[i:], m.BuildId)
+		i = encodeVarintMessage(dAtA, i, uint64(len(m.BuildId)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *TaskReachabilityScope) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TaskReachabilityScope) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TaskReachabilityScope) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Variant != nil {
+		{
+			size := m.Variant.Size()
+			i -= size
+			if _, err := m.Variant.MarshalTo(dAtA[i:]); err != nil {
+				return 0, err
+			}
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *TaskReachabilityScope_Namespace) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TaskReachabilityScope_Namespace) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Namespace != nil {
+		{
+			size, err := m.Namespace.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintMessage(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+func (m *TaskReachabilityScope_TaskQueue) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TaskReachabilityScope_TaskQueue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	i -= len(m.TaskQueue)
+	copy(dAtA[i:], m.TaskQueue)
+	i = encodeVarintMessage(dAtA, i, uint64(len(m.TaskQueue)))
+	i--
+	dAtA[i] = 0x12
+	return len(dAtA) - i, nil
+}
 func encodeVarintMessage(dAtA []byte, offset int, v uint64) int {
 	offset -= sovMessage(v)
 	base := offset
@@ -1404,6 +1966,80 @@ func (m *CompatibleVersionSet) Size() (n int) {
 	return n
 }
 
+func (m *TaskQueueReachability) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.TaskQueue)
+	if l > 0 {
+		n += 1 + l + sovMessage(uint64(l))
+	}
+	if len(m.Reachability) > 0 {
+		l = 0
+		for _, e := range m.Reachability {
+			l += sovMessage(uint64(e))
+		}
+		n += 1 + sovMessage(uint64(l)) + l
+	}
+	return n
+}
+
+func (m *BuildIdReachability) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.BuildId)
+	if l > 0 {
+		n += 1 + l + sovMessage(uint64(l))
+	}
+	if len(m.TaskQueueReachability) > 0 {
+		for _, e := range m.TaskQueueReachability {
+			l = e.Size()
+			n += 1 + l + sovMessage(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *TaskReachabilityScope) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Variant != nil {
+		n += m.Variant.Size()
+	}
+	return n
+}
+
+func (m *TaskReachabilityScope_Namespace) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Namespace != nil {
+		l = m.Namespace.Size()
+		n += 1 + l + sovMessage(uint64(l))
+	}
+	return n
+}
+func (m *TaskReachabilityScope_TaskQueue) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.TaskQueue)
+	n += 1 + l + sovMessage(uint64(l))
+	return n
+}
+
 func sovMessage(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
@@ -1497,6 +2133,63 @@ func (this *CompatibleVersionSet) String() string {
 	}
 	s := strings.Join([]string{`&CompatibleVersionSet{`,
 		`BuildIds:` + fmt.Sprintf("%v", this.BuildIds) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *TaskQueueReachability) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&TaskQueueReachability{`,
+		`TaskQueue:` + fmt.Sprintf("%v", this.TaskQueue) + `,`,
+		`Reachability:` + fmt.Sprintf("%v", this.Reachability) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *BuildIdReachability) String() string {
+	if this == nil {
+		return "nil"
+	}
+	repeatedStringForTaskQueueReachability := "[]*TaskQueueReachability{"
+	for _, f := range this.TaskQueueReachability {
+		repeatedStringForTaskQueueReachability += strings.Replace(f.String(), "TaskQueueReachability", "TaskQueueReachability", 1) + ","
+	}
+	repeatedStringForTaskQueueReachability += "}"
+	s := strings.Join([]string{`&BuildIdReachability{`,
+		`BuildId:` + fmt.Sprintf("%v", this.BuildId) + `,`,
+		`TaskQueueReachability:` + repeatedStringForTaskQueueReachability + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *TaskReachabilityScope) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&TaskReachabilityScope{`,
+		`Variant:` + fmt.Sprintf("%v", this.Variant) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *TaskReachabilityScope_Namespace) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&TaskReachabilityScope_Namespace{`,
+		`Namespace:` + strings.Replace(fmt.Sprintf("%v", this.Namespace), "Empty", "types.Empty", 1) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *TaskReachabilityScope_TaskQueue) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&TaskReachabilityScope_TaskQueue{`,
+		`TaskQueue:` + fmt.Sprintf("%v", this.TaskQueue) + `,`,
 		`}`,
 	}, "")
 	return s
@@ -2420,6 +3113,399 @@ func (m *CompatibleVersionSet) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.BuildIds = append(m.BuildIds, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMessage(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthMessage
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthMessage
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *TaskQueueReachability) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMessage
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TaskQueueReachability: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TaskQueueReachability: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskQueue", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMessage
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMessage
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMessage
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TaskQueue = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType == 0 {
+				var v v1.TaskReachability
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowMessage
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= v1.TaskReachability(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.Reachability = append(m.Reachability, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowMessage
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthMessage
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthMessage
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				if elementCount != 0 && len(m.Reachability) == 0 {
+					m.Reachability = make([]v1.TaskReachability, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v v1.TaskReachability
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowMessage
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= v1.TaskReachability(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.Reachability = append(m.Reachability, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reachability", wireType)
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMessage(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthMessage
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthMessage
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *BuildIdReachability) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMessage
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: BuildIdReachability: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: BuildIdReachability: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BuildId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMessage
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMessage
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMessage
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.BuildId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskQueueReachability", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMessage
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMessage
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMessage
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TaskQueueReachability = append(m.TaskQueueReachability, &TaskQueueReachability{})
+			if err := m.TaskQueueReachability[len(m.TaskQueueReachability)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMessage(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthMessage
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthMessage
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *TaskReachabilityScope) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMessage
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TaskReachabilityScope: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TaskReachabilityScope: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Namespace", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMessage
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMessage
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMessage
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &types.Empty{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Variant = &TaskReachabilityScope_Namespace{v}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskQueue", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMessage
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMessage
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMessage
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Variant = &TaskReachabilityScope_TaskQueue{string(dAtA[iNdEx:postIndex])}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
