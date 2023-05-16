@@ -407,8 +407,14 @@ type WorkflowServiceClient interface {
 	UpdateWorkerBuildIdCompatibility(ctx context.Context, in *UpdateWorkerBuildIdCompatibilityRequest, opts ...grpc.CallOption) (*UpdateWorkerBuildIdCompatibilityResponse, error)
 	// Fetches the worker build id versioning sets for a task queue.
 	GetWorkerBuildIdCompatibility(ctx context.Context, in *GetWorkerBuildIdCompatibilityRequest, opts ...grpc.CallOption) (*GetWorkerBuildIdCompatibilityResponse, error)
-	// Fetches task reachability to determine whether a single worker or all workers polling on a specific task queue may
-	// be retired.
+	// Fetches task reachability to determine whether a worker may be retired.
+	// The response lists all task queues mapped to the requested build id when the requested query scope is for an
+	// entire namespace but the number of task queues that include reachability information is limited.
+	// When reaching the limit, task queues that reachability information could not be retrieved for will be marked with a single
+	// TASK_REACHABILITY_UNSPECIFIED entry. The caller may issue separate calls to get the reachability for those task
+	// queues.
+	// Open source users can adjust this limit by setting the server's dynamic config value for
+	// `limit.reachabilityTaskQueueScan` with the caveat that this call can strain the visibility store.
 	GetWorkerTaskReachability(ctx context.Context, in *GetWorkerTaskReachabilityRequest, opts ...grpc.CallOption) (*GetWorkerTaskReachabilityResponse, error)
 	// Invokes the specified update function on user workflow code.
 	// (-- api-linter: core::0134=disabled
@@ -1203,8 +1209,14 @@ type WorkflowServiceServer interface {
 	UpdateWorkerBuildIdCompatibility(context.Context, *UpdateWorkerBuildIdCompatibilityRequest) (*UpdateWorkerBuildIdCompatibilityResponse, error)
 	// Fetches the worker build id versioning sets for a task queue.
 	GetWorkerBuildIdCompatibility(context.Context, *GetWorkerBuildIdCompatibilityRequest) (*GetWorkerBuildIdCompatibilityResponse, error)
-	// Fetches task reachability to determine whether a single worker or all workers polling on a specific task queue may
-	// be retired.
+	// Fetches task reachability to determine whether a worker may be retired.
+	// The response lists all task queues mapped to the requested build id when the requested query scope is for an
+	// entire namespace but the number of task queues that include reachability information is limited.
+	// When reaching the limit, task queues that reachability information could not be retrieved for will be marked with a single
+	// TASK_REACHABILITY_UNSPECIFIED entry. The caller may issue separate calls to get the reachability for those task
+	// queues.
+	// Open source users can adjust this limit by setting the server's dynamic config value for
+	// `limit.reachabilityTaskQueueScan` with the caveat that this call can strain the visibility store.
 	GetWorkerTaskReachability(context.Context, *GetWorkerTaskReachabilityRequest) (*GetWorkerTaskReachabilityResponse, error)
 	// Invokes the specified update function on user workflow code.
 	// (-- api-linter: core::0134=disabled
