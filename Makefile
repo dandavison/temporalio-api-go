@@ -26,7 +26,8 @@ PINNED_DEPENDENCIES := \
 PROTO_ROOT := proto/api
 PROTO_FILES = $(shell find $(PROTO_ROOT)/temporal -name "*.proto")
 PROTO_DIRS = $(sort $(dir $(PROTO_FILES)))
-PROTO_ENUMS := $(shell grep -R '^enum ' $(PROTO_ROOT) | cut -d ' ' -f2)
+GREP_EXCLUDE = --exclude-dir=google --exclude-dir=internal
+PROTO_ENUMS := $(shell grep $(GREP_EXCLUDE) -R '^enum ' $(PROTO_ROOT) | grep -v '^google' | cut -d ' ' -f2)
 PROTO_OUT := .
 PROTO_IMPORTS = \
 	-I=$(PROTO_ROOT)
