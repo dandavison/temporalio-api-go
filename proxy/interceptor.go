@@ -1208,6 +1208,27 @@ func visitPayloads(ctx *VisitPayloadsContext, options *VisitPayloadsOptions, obj
 				return err
 			}
 
+		case []*workflow.CallbackInfo:
+			for _, x := range o {
+				if err := visitPayloads(ctx, options, x); err != nil {
+					return err
+				}
+			}
+
+		case *workflow.CallbackInfo:
+
+			if o == nil {
+				continue
+			}
+			ctx.Parent = o
+			if err := visitPayloads(
+				ctx,
+				options,
+				o.GetLastAttemptFailure(),
+			); err != nil {
+				return err
+			}
+
 		case *workflow.NewWorkflowExecutionInfo:
 
 			if o == nil {
@@ -1345,6 +1366,7 @@ func visitPayloads(ctx *VisitPayloadsContext, options *VisitPayloadsOptions, obj
 			if err := visitPayloads(
 				ctx,
 				options,
+				o.GetCallbacks(),
 				o.GetPendingActivities(),
 				o.GetWorkflowExecutionInfo(),
 			); err != nil {
@@ -2189,6 +2211,26 @@ func visitFailures(ctx *VisitFailuresContext, options *VisitFailuresOptions, obj
 				return err
 			}
 
+		case []*workflow.CallbackInfo:
+			for _, x := range o {
+				if err := visitFailures(ctx, options, x); err != nil {
+					return err
+				}
+			}
+
+		case *workflow.CallbackInfo:
+			if o == nil {
+				continue
+			}
+			ctx.Parent = o
+			if err := visitFailures(
+				ctx,
+				options,
+				o.GetLastAttemptFailure(),
+			); err != nil {
+				return err
+			}
+
 		case []*workflow.PendingActivityInfo:
 			for _, x := range o {
 				if err := visitFailures(ctx, options, x); err != nil {
@@ -2217,6 +2259,7 @@ func visitFailures(ctx *VisitFailuresContext, options *VisitFailuresOptions, obj
 			if err := visitFailures(
 				ctx,
 				options,
+				o.GetCallbacks(),
 				o.GetPendingActivities(),
 			); err != nil {
 				return err
