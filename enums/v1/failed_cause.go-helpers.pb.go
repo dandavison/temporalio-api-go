@@ -63,10 +63,9 @@ func WorkflowTaskFailedCauseFromString(s string) (WorkflowTaskFailedCause, error
 
 var (
 	StartChildWorkflowExecutionFailedCause_shorthandValue = map[string]int32{
-		"Unspecified":               0,
-		"WorkflowAlreadyExists":     1,
-		"NamespaceNotFound":         2,
-		"InvalidVersioningOverride": 3,
+		"Unspecified":           0,
+		"WorkflowAlreadyExists": 1,
+		"NamespaceNotFound":     2,
 	}
 )
 
