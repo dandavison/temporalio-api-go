@@ -3721,6 +3721,32 @@ func visitPayloads(
 
 			ctx.Context = prevCtx
 
+		case *streamservice.CommitModeAppend:
+
+			if o == nil {
+				continue
+			}
+
+			prevCtx := ctx.Context
+			if options.ContextHook != nil {
+				var hookErr error
+				if ctx.Context, hookErr = options.ContextHook(prevCtx, o); hookErr != nil {
+					return hookErr
+				}
+			}
+
+			if err := visitPayloads(
+				ctx,
+				options,
+				o,
+				concState,
+				o.GetRecords(),
+			); err != nil {
+				return err
+			}
+
+			ctx.Context = prevCtx
+
 		case *streamservice.ReadResponse:
 
 			if o == nil {

@@ -303,6 +303,117 @@ func (this *WorkflowTaskCommit) Equal(that interface{}) bool {
 	return proto.Equal(this, that1)
 }
 
+// Marshal an object of type StreamCreated to the protobuf v3 wire format
+func (val *StreamCreated) Marshal() ([]byte, error) {
+	return proto.Marshal(val)
+}
+
+// Unmarshal an object of type StreamCreated from the protobuf v3 wire format
+func (val *StreamCreated) Unmarshal(buf []byte) error {
+	return proto.Unmarshal(buf, val)
+}
+
+// Size returns the size of the object, in bytes, once serialized
+func (val *StreamCreated) Size() int {
+	return proto.Size(val)
+}
+
+// Equal returns whether two StreamCreated values are equivalent by recursively
+// comparing the message's fields.
+// For more information see the documentation for
+// https://pkg.go.dev/google.golang.org/protobuf/proto#Equal
+func (this *StreamCreated) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	var that1 *StreamCreated
+	switch t := that.(type) {
+	case *StreamCreated:
+		that1 = t
+	case StreamCreated:
+		that1 = &t
+	default:
+		return false
+	}
+
+	return proto.Equal(this, that1)
+}
+
+// Marshal an object of type WorkflowAppendModeFixed to the protobuf v3 wire format
+func (val *WorkflowAppendModeFixed) Marshal() ([]byte, error) {
+	return proto.Marshal(val)
+}
+
+// Unmarshal an object of type WorkflowAppendModeFixed from the protobuf v3 wire format
+func (val *WorkflowAppendModeFixed) Unmarshal(buf []byte) error {
+	return proto.Unmarshal(buf, val)
+}
+
+// Size returns the size of the object, in bytes, once serialized
+func (val *WorkflowAppendModeFixed) Size() int {
+	return proto.Size(val)
+}
+
+// Equal returns whether two WorkflowAppendModeFixed values are equivalent by recursively
+// comparing the message's fields.
+// For more information see the documentation for
+// https://pkg.go.dev/google.golang.org/protobuf/proto#Equal
+func (this *WorkflowAppendModeFixed) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	var that1 *WorkflowAppendModeFixed
+	switch t := that.(type) {
+	case *WorkflowAppendModeFixed:
+		that1 = t
+	case WorkflowAppendModeFixed:
+		that1 = &t
+	default:
+		return false
+	}
+
+	return proto.Equal(this, that1)
+}
+
+// Marshal an object of type CommitModeAppend to the protobuf v3 wire format
+func (val *CommitModeAppend) Marshal() ([]byte, error) {
+	return proto.Marshal(val)
+}
+
+// Unmarshal an object of type CommitModeAppend from the protobuf v3 wire format
+func (val *CommitModeAppend) Unmarshal(buf []byte) error {
+	return proto.Unmarshal(buf, val)
+}
+
+// Size returns the size of the object, in bytes, once serialized
+func (val *CommitModeAppend) Size() int {
+	return proto.Size(val)
+}
+
+// Equal returns whether two CommitModeAppend values are equivalent by recursively
+// comparing the message's fields.
+// For more information see the documentation for
+// https://pkg.go.dev/google.golang.org/protobuf/proto#Equal
+func (this *CommitModeAppend) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	var that1 *CommitModeAppend
+	switch t := that.(type) {
+	case *CommitModeAppend:
+		that1 = t
+	case CommitModeAppend:
+		that1 = &t
+	default:
+		return false
+	}
+
+	return proto.Equal(this, that1)
+}
+
 // Marshal an object of type Record to the protobuf v3 wire format
 func (val *Record) Marshal() ([]byte, error) {
 	return proto.Marshal(val)
@@ -623,18 +734,19 @@ func CloseStateFromString(s string) (CloseState, error) {
 
 var (
 	StreamFailureType_shorthandValue = map[string]int32{
-		"Unspecified":             0,
-		"Closed":                  1,
-		"NotFound":                2,
-		"Expired":                 3,
-		"NotOwner":                4,
-		"CursorMismatch":          5,
-		"SeqDivergent":            6,
-		"SeqStale":                7,
-		"EpochFenced":             8,
-		"SpeculativeWorkflowTask": 9,
-		"SeqGap":                  10,
-		"TooLarge":                11,
+		"Unspecified":                0,
+		"Closed":                     1,
+		"NotFound":                   2,
+		"Expired":                    3,
+		"NotOwner":                   4,
+		"CursorMismatch":             5,
+		"SeqDivergent":               6,
+		"SeqStale":                   7,
+		"EpochFenced":                8,
+		"SpeculativeWorkflowTask":    9,
+		"SeqGap":                     10,
+		"TooLarge":                   11,
+		"WorkflowAppendModeMismatch": 12,
 	}
 )
 
@@ -647,4 +759,23 @@ func StreamFailureTypeFromString(s string) (StreamFailureType, error) {
 		return StreamFailureType(v), nil
 	}
 	return StreamFailureType(0), fmt.Errorf("%s is not a valid StreamFailureType", s)
+}
+
+var (
+	WorkflowAppendMode_shorthandValue = map[string]int32{
+		"Unspecified": 0,
+		"Sink":        1,
+		"Commit":      2,
+	}
+)
+
+// WorkflowAppendModeFromString parses a WorkflowAppendMode value from  either the protojson
+// canonical SCREAMING_CASE enum or the traditional temporal PascalCase enum to WorkflowAppendMode
+func WorkflowAppendModeFromString(s string) (WorkflowAppendMode, error) {
+	if v, ok := WorkflowAppendMode_value[s]; ok {
+		return WorkflowAppendMode(v), nil
+	} else if v, ok := WorkflowAppendMode_shorthandValue[s]; ok {
+		return WorkflowAppendMode(v), nil
+	}
+	return WorkflowAppendMode(0), fmt.Errorf("%s is not a valid WorkflowAppendMode", s)
 }
