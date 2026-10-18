@@ -284,14 +284,19 @@ func (WorkflowAppendMode) EnumDescriptor() ([]byte, []int) {
 	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{2}
 }
 
-// A stream owned by a workflow run chain.
+// A stream, named by its owner: a workflow run chain, by workflow_id and first_run_id, or a
+// Standalone Activity execution, by activity_id and activity_run_id. Exactly one of workflow_id and
+// activity_id is set.
 type StreamRef struct {
 	state      protoimpl.MessageState `protogen:"open.v1"`
 	WorkflowId string                 `protobuf:"bytes,1,opt,name=workflow_id,json=workflowId,proto3" json:"workflow_id,omitempty"`
 	// Pins the run chain. Empty means the workflow ID's current chain.
 	FirstRunId string `protobuf:"bytes,2,opt,name=first_run_id,json=firstRunId,proto3" json:"first_run_id,omitempty"`
 	// The caller's namespace. The server sets it when empty.
-	Namespace     string `protobuf:"bytes,3,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Namespace  string `protobuf:"bytes,3,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	ActivityId string `protobuf:"bytes,4,opt,name=activity_id,json=activityId,proto3" json:"activity_id,omitempty"`
+	// Pins the activity execution. Empty means the activity ID's current execution.
+	ActivityRunId string `protobuf:"bytes,5,opt,name=activity_run_id,json=activityRunId,proto3" json:"activity_run_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -343,6 +348,20 @@ func (x *StreamRef) GetFirstRunId() string {
 func (x *StreamRef) GetNamespace() string {
 	if x != nil {
 		return x.Namespace
+	}
+	return ""
+}
+
+func (x *StreamRef) GetActivityId() string {
+	if x != nil {
+		return x.ActivityId
+	}
+	return ""
+}
+
+func (x *StreamRef) GetActivityRunId() string {
+	if x != nil {
+		return x.ActivityRunId
 	}
 	return ""
 }
@@ -1468,14 +1487,18 @@ func (x *ReadResponse) GetClose() *StreamClose {
 
 // Input of the "Close" operation. Only the stream's owner, a workflow task of the owning workflow,
 // may close the stream.
+// Only the stream's owner closes it: for a workflow-owned stream, a workflow task attempt of the
+// run (owner); for an activity-owned stream, the activity's current attempt, by its task token
+// (activity_task_token).
 type CloseRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Stream        *StreamRef             `protobuf:"bytes,1,opt,name=stream,proto3" json:"stream,omitempty"`
-	Owner         *WorkflowTaskProducer  `protobuf:"bytes,2,opt,name=owner,proto3" json:"owner,omitempty"`
-	Seq           int64                  `protobuf:"varint,3,opt,name=seq,proto3" json:"seq,omitempty"`
-	Close         *StreamClose           `protobuf:"bytes,4,opt,name=close,proto3" json:"close,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	Stream            *StreamRef             `protobuf:"bytes,1,opt,name=stream,proto3" json:"stream,omitempty"`
+	Owner             *WorkflowTaskProducer  `protobuf:"bytes,2,opt,name=owner,proto3" json:"owner,omitempty"`
+	Seq               int64                  `protobuf:"varint,3,opt,name=seq,proto3" json:"seq,omitempty"`
+	Close             *StreamClose           `protobuf:"bytes,4,opt,name=close,proto3" json:"close,omitempty"`
+	ActivityTaskToken []byte                 `protobuf:"bytes,5,opt,name=activity_task_token,json=activityTaskToken,proto3" json:"activity_task_token,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *CloseRequest) Reset() {
@@ -1536,6 +1559,13 @@ func (x *CloseRequest) GetClose() *StreamClose {
 	return nil
 }
 
+func (x *CloseRequest) GetActivityTaskToken() []byte {
+	if x != nil {
+		return x.ActivityTaskToken
+	}
+	return nil
+}
+
 type CloseResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -1576,13 +1606,16 @@ var File_temporal_api_nexusservices_streamservice_v1_request_response_proto prot
 
 const file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDesc = "" +
 	"\n" +
-	"Btemporal/api/nexusservices/streamservice/v1/request_response.proto\x12+temporal.api.nexusservices.streamservice.v1\x1a\x1egoogle/protobuf/duration.proto\x1a$temporal/api/common/v1/message.proto\x1a%temporal/api/failure/v1/message.proto\"l\n" +
+	"Btemporal/api/nexusservices/streamservice/v1/request_response.proto\x12+temporal.api.nexusservices.streamservice.v1\x1a\x1egoogle/protobuf/duration.proto\x1a$temporal/api/common/v1/message.proto\x1a%temporal/api/failure/v1/message.proto\"\xb5\x01\n" +
 	"\tStreamRef\x12\x1f\n" +
 	"\vworkflow_id\x18\x01 \x01(\tR\n" +
 	"workflowId\x12 \n" +
 	"\ffirst_run_id\x18\x02 \x01(\tR\n" +
 	"firstRunId\x12\x1c\n" +
-	"\tnamespace\x18\x03 \x01(\tR\tnamespace\"\x82\x01\n" +
+	"\tnamespace\x18\x03 \x01(\tR\tnamespace\x12\x1f\n" +
+	"\vactivity_id\x18\x04 \x01(\tR\n" +
+	"activityId\x12&\n" +
+	"\x0factivity_run_id\x18\x05 \x01(\tR\ractivityRunId\"\x82\x01\n" +
 	"\x14WorkflowTaskProducer\x12\x15\n" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\x129\n" +
 	"\x19previous_started_event_id\x18\x02 \x01(\x03R\x16previousStartedEventId\x12\x18\n" +
@@ -1657,12 +1690,13 @@ const file_temporal_api_nexusservices_streamservice_v1_request_response_proto_ra
 	"\fReadResponse\x12M\n" +
 	"\arecords\x18\x01 \x03(\v23.temporal.api.nexusservices.streamservice.v1.RecordR\arecords\x12\x16\n" +
 	"\x06cursor\x18\x02 \x01(\fR\x06cursor\x12N\n" +
-	"\x05close\x18\x03 \x01(\v28.temporal.api.nexusservices.streamservice.v1.StreamCloseR\x05close\"\x99\x02\n" +
+	"\x05close\x18\x03 \x01(\v28.temporal.api.nexusservices.streamservice.v1.StreamCloseR\x05close\"\xc9\x02\n" +
 	"\fCloseRequest\x12N\n" +
 	"\x06stream\x18\x01 \x01(\v26.temporal.api.nexusservices.streamservice.v1.StreamRefR\x06stream\x12W\n" +
 	"\x05owner\x18\x02 \x01(\v2A.temporal.api.nexusservices.streamservice.v1.WorkflowTaskProducerR\x05owner\x12\x10\n" +
 	"\x03seq\x18\x03 \x01(\x03R\x03seq\x12N\n" +
-	"\x05close\x18\x04 \x01(\v28.temporal.api.nexusservices.streamservice.v1.StreamCloseR\x05close\"\x0f\n" +
+	"\x05close\x18\x04 \x01(\v28.temporal.api.nexusservices.streamservice.v1.StreamCloseR\x05close\x12.\n" +
+	"\x13activity_task_token\x18\x05 \x01(\fR\x11activityTaskToken\"\x0f\n" +
 	"\rCloseResponse*\xad\x01\n" +
 	"\n" +
 	"CloseState\x12\x1b\n" +
