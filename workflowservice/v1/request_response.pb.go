@@ -2576,8 +2576,13 @@ type PollActivityTaskQueueResponse struct {
 	PollerGroupsInfo *v13.PollerGroupsInfo `protobuf:"bytes,22,opt,name=poller_groups_info,json=pollerGroupsInfo,proto3" json:"poller_groups_info,omitempty"`
 	// Serialization context propagated from the Nexus caller that started this activity.
 	PropagatedNexusSerializationContext *v19.PropagatedSerializationContext `protobuf:"bytes,23,opt,name=propagated_nexus_serialization_context,json=propagatedNexusSerializationContext,proto3" json:"propagated_nexus_serialization_context,omitempty"`
-	unknownFields                       protoimpl.UnknownFields
-	sizeCache                           protoimpl.SizeCache
+	// Identifies this attempt among all attempts of the activity. It is 0 for the first attempt and
+	// increases each time the server schedules another attempt, including after a reset, which sets
+	// `attempt` back to 1. It never decreases, so a worker can use it to tell a superseded attempt
+	// from the current one.
+	AttemptStamp  int32 `protobuf:"varint,24,opt,name=attempt_stamp,json=attemptStamp,proto3" json:"attempt_stamp,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *PollActivityTaskQueueResponse) Reset() {
@@ -2770,6 +2775,13 @@ func (x *PollActivityTaskQueueResponse) GetPropagatedNexusSerializationContext()
 		return x.PropagatedNexusSerializationContext
 	}
 	return nil
+}
+
+func (x *PollActivityTaskQueueResponse) GetAttemptStamp() int32 {
+	if x != nil {
+		return x.AttemptStamp
+	}
+	return 0
 }
 
 type RecordActivityTaskHeartbeatRequest struct {
@@ -20905,7 +20917,7 @@ const file_temporal_api_workflowservice_v1_request_response_proto_rawDesc = "" +
 	"\x19worker_control_task_queue\x18\t \x01(\tR\x16workerControlTaskQueue\x12\\\n" +
 	"\x13task_queue_metadata\x18\x04 \x01(\v2,.temporal.api.taskqueue.v1.TaskQueueMetadataR\x11taskQueueMetadata\x12u\n" +
 	"\x1bworker_version_capabilities\x18\x05 \x01(\v21.temporal.api.common.v1.WorkerVersionCapabilitiesB\x02\x18\x01R\x19workerVersionCapabilities\x12b\n" +
-	"\x12deployment_options\x18\x06 \x01(\v23.temporal.api.deployment.v1.WorkerDeploymentOptionsR\x11deploymentOptionsJ\x04\b\a\x10\bR\x10worker_heartbeat\"\x86\r\n" +
+	"\x12deployment_options\x18\x06 \x01(\v23.temporal.api.deployment.v1.WorkerDeploymentOptionsR\x11deploymentOptionsJ\x04\b\a\x10\bR\x10worker_heartbeat\"\xab\r\n" +
 	"\x1dPollActivityTaskQueueResponse\x12\x1d\n" +
 	"\n" +
 	"task_token\x18\x01 \x01(\fR\ttaskToken\x12-\n" +
@@ -20932,7 +20944,8 @@ const file_temporal_api_workflowservice_v1_request_response_proto_rawDesc = "" +
 	"\x0factivity_run_id\x18\x14 \x01(\tR\ractivityRunId\x12\\\n" +
 	"\x12poller_group_infos\x18\x15 \x03(\v2*.temporal.api.taskqueue.v1.PollerGroupInfoB\x02\x18\x01R\x10pollerGroupInfos\x12Y\n" +
 	"\x12poller_groups_info\x18\x16 \x01(\v2+.temporal.api.taskqueue.v1.PollerGroupsInfoR\x10pollerGroupsInfo\x12\x8a\x01\n" +
-	"&propagated_nexus_serialization_context\x18\x17 \x01(\v25.temporal.api.nexus.v1.PropagatedSerializationContextR#propagatedNexusSerializationContext\"\xda\x01\n" +
+	"&propagated_nexus_serialization_context\x18\x17 \x01(\v25.temporal.api.nexus.v1.PropagatedSerializationContextR#propagatedNexusSerializationContext\x12#\n" +
+	"\rattempt_stamp\x18\x18 \x01(\x05R\fattemptStamp\"\xda\x01\n" +
 	"\"RecordActivityTaskHeartbeatRequest\x12\x1d\n" +
 	"\n" +
 	"task_token\x18\x01 \x01(\fR\ttaskToken\x12:\n" +
