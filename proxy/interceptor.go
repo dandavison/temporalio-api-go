@@ -22,6 +22,7 @@ import (
 	"go.temporal.io/api/history/v1"
 	"go.temporal.io/api/nexus/v1"
 	"go.temporal.io/api/nexusoperation/v1"
+	"go.temporal.io/api/nexusservices/streamservice/v1"
 	"go.temporal.io/api/notificationservice/v1"
 	"go.temporal.io/api/operatorservice/v1"
 	"go.temporal.io/api/protocol/v1"
@@ -3639,6 +3640,169 @@ func visitPayloads(
 
 			ctx.Context = prevCtx
 
+		case *streamservice.AppendRequest:
+
+			if o == nil {
+				continue
+			}
+
+			prevCtx := ctx.Context
+			if options.ContextHook != nil {
+				var hookErr error
+				if ctx.Context, hookErr = options.ContextHook(prevCtx, o); hookErr != nil {
+					return hookErr
+				}
+			}
+
+			if err := visitPayloads(
+				ctx,
+				options,
+				o,
+				concState,
+				o.GetRecords(),
+			); err != nil {
+				return err
+			}
+
+			ctx.Context = prevCtx
+
+		case *streamservice.CloseRequest:
+
+			if o == nil {
+				continue
+			}
+
+			prevCtx := ctx.Context
+			if options.ContextHook != nil {
+				var hookErr error
+				if ctx.Context, hookErr = options.ContextHook(prevCtx, o); hookErr != nil {
+					return hookErr
+				}
+			}
+
+			if err := visitPayloads(
+				ctx,
+				options,
+				o,
+				concState,
+				o.GetClose(),
+			); err != nil {
+				return err
+			}
+
+			ctx.Context = prevCtx
+
+		case *streamservice.ReadResponse:
+
+			if o == nil {
+				continue
+			}
+
+			prevCtx := ctx.Context
+			if options.ContextHook != nil {
+				var hookErr error
+				if ctx.Context, hookErr = options.ContextHook(prevCtx, o); hookErr != nil {
+					return hookErr
+				}
+			}
+
+			if err := visitPayloads(
+				ctx,
+				options,
+				o,
+				concState,
+				o.GetClose(),
+				o.GetRecords(),
+			); err != nil {
+				return err
+			}
+
+			ctx.Context = prevCtx
+
+		case []*streamservice.Record:
+			for _, x := range o {
+				if err := visitPayloads(ctx, options, parent, concState, x); err != nil {
+					return err
+				}
+			}
+
+		case *streamservice.Record:
+
+			if o == nil {
+				continue
+			}
+
+			prevCtx := ctx.Context
+			if options.ContextHook != nil {
+				var hookErr error
+				if ctx.Context, hookErr = options.ContextHook(prevCtx, o); hookErr != nil {
+					return hookErr
+				}
+			}
+
+			if o.Payload != nil {
+				if err := visitPayload(ctx, options, o, concState, &o.Payload); err != nil {
+					return err
+				}
+			}
+
+			ctx.Context = prevCtx
+
+		case []*streamservice.RecordInput:
+			for _, x := range o {
+				if err := visitPayloads(ctx, options, parent, concState, x); err != nil {
+					return err
+				}
+			}
+
+		case *streamservice.RecordInput:
+
+			if o == nil {
+				continue
+			}
+
+			prevCtx := ctx.Context
+			if options.ContextHook != nil {
+				var hookErr error
+				if ctx.Context, hookErr = options.ContextHook(prevCtx, o); hookErr != nil {
+					return hookErr
+				}
+			}
+
+			if o.Payload != nil {
+				if err := visitPayload(ctx, options, o, concState, &o.Payload); err != nil {
+					return err
+				}
+			}
+
+			ctx.Context = prevCtx
+
+		case *streamservice.StreamClose:
+
+			if o == nil {
+				continue
+			}
+
+			prevCtx := ctx.Context
+			if options.ContextHook != nil {
+				var hookErr error
+				if ctx.Context, hookErr = options.ContextHook(prevCtx, o); hookErr != nil {
+					return hookErr
+				}
+			}
+
+			if err := visitPayloads(
+				ctx,
+				options,
+				o,
+				concState,
+				o.GetFailure(),
+			); err != nil {
+				return err
+			}
+
+			ctx.Context = prevCtx
+
 		case *update.Acceptance:
 
 			if o == nil {
@@ -5886,6 +6050,103 @@ func visitPayloads(
 
 			ctx.Context = prevCtx
 
+		case *workflowservice.StartNexusOperationRequest:
+
+			if o == nil {
+				continue
+			}
+
+			prevCtx := ctx.Context
+			if options.ContextHook != nil {
+				var hookErr error
+				if ctx.Context, hookErr = options.ContextHook(prevCtx, o); hookErr != nil {
+					return hookErr
+				}
+			}
+
+			if o.Input != nil {
+				if err := visitPayload(ctx, options, o, concState, &o.Input); err != nil {
+					return err
+				}
+			}
+
+			ctx.Context = prevCtx
+
+		case *workflowservice.StartNexusOperationResponse:
+
+			if o == nil {
+				continue
+			}
+
+			prevCtx := ctx.Context
+			if options.ContextHook != nil {
+				var hookErr error
+				if ctx.Context, hookErr = options.ContextHook(prevCtx, o); hookErr != nil {
+					return hookErr
+				}
+			}
+
+			if err := visitPayloads(
+				ctx,
+				options,
+				o,
+				concState,
+				o.GetOperationFailure(),
+				o.GetSyncSuccess(),
+			); err != nil {
+				return err
+			}
+
+			ctx.Context = prevCtx
+
+		case *workflowservice.StartNexusOperationResponse_OperationFailure:
+
+			if o == nil {
+				continue
+			}
+
+			prevCtx := ctx.Context
+			if options.ContextHook != nil {
+				var hookErr error
+				if ctx.Context, hookErr = options.ContextHook(prevCtx, o); hookErr != nil {
+					return hookErr
+				}
+			}
+
+			if err := visitPayloads(
+				ctx,
+				options,
+				o,
+				concState,
+				o.GetFailure(),
+			); err != nil {
+				return err
+			}
+
+			ctx.Context = prevCtx
+
+		case *workflowservice.StartNexusOperationResponse_SyncSuccess:
+
+			if o == nil {
+				continue
+			}
+
+			prevCtx := ctx.Context
+			if options.ContextHook != nil {
+				var hookErr error
+				if ctx.Context, hookErr = options.ContextHook(prevCtx, o); hookErr != nil {
+					return hookErr
+				}
+			}
+
+			if o.Payload != nil {
+				if err := visitPayload(ctx, options, o, concState, &o.Payload); err != nil {
+					return err
+				}
+			}
+
+			ctx.Context = prevCtx
+
 		case *workflowservice.StartWorkflowExecutionRequest:
 
 			if o == nil {
@@ -6796,6 +7057,45 @@ func visitFailures(ctx *VisitFailuresContext, options *VisitFailuresOptions, obj
 				return err
 			}
 
+		case *streamservice.CloseRequest:
+			if o == nil {
+				continue
+			}
+			ctx.Parent = o
+			if err := visitFailures(
+				ctx,
+				options,
+				o.GetClose(),
+			); err != nil {
+				return err
+			}
+
+		case *streamservice.ReadResponse:
+			if o == nil {
+				continue
+			}
+			ctx.Parent = o
+			if err := visitFailures(
+				ctx,
+				options,
+				o.GetClose(),
+			); err != nil {
+				return err
+			}
+
+		case *streamservice.StreamClose:
+			if o == nil {
+				continue
+			}
+			ctx.Parent = o
+			if err := visitFailures(
+				ctx,
+				options,
+				o.GetFailure(),
+			); err != nil {
+				return err
+			}
+
 		case *update.Outcome:
 			if o == nil {
 				continue
@@ -7229,6 +7529,32 @@ func visitFailures(ctx *VisitFailuresContext, options *VisitFailuresOptions, obj
 				options,
 				o.GetFailure(),
 				o.GetMessages(),
+			); err != nil {
+				return err
+			}
+
+		case *workflowservice.StartNexusOperationResponse:
+			if o == nil {
+				continue
+			}
+			ctx.Parent = o
+			if err := visitFailures(
+				ctx,
+				options,
+				o.GetOperationFailure(),
+			); err != nil {
+				return err
+			}
+
+		case *workflowservice.StartNexusOperationResponse_OperationFailure:
+			if o == nil {
+				continue
+			}
+			ctx.Parent = o
+			if err := visitFailures(
+				ctx,
+				options,
+				o.GetFailure(),
 			); err != nil {
 				return err
 			}
