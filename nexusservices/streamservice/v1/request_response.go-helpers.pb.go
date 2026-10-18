@@ -634,6 +634,7 @@ var (
 		"EpochFenced":             8,
 		"SpeculativeWorkflowTask": 9,
 		"SeqGap":                  10,
+		"TooLarge":                11,
 	}
 )
 

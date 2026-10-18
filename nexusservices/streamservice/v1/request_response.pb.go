@@ -121,6 +121,8 @@ const (
 	// The seq skips one: a new epoch must start at 0, and an epoch's next seq must follow its
 	// latest.
 	STREAM_FAILURE_TYPE_SEQ_GAP StreamFailureType = 10
+	// A record, or the append as a whole, exceeds a size limit.
+	STREAM_FAILURE_TYPE_TOO_LARGE StreamFailureType = 11
 )
 
 // Enum value maps for StreamFailureType.
@@ -137,6 +139,7 @@ var (
 		8:  "STREAM_FAILURE_TYPE_EPOCH_FENCED",
 		9:  "STREAM_FAILURE_TYPE_SPECULATIVE_WORKFLOW_TASK",
 		10: "STREAM_FAILURE_TYPE_SEQ_GAP",
+		11: "STREAM_FAILURE_TYPE_TOO_LARGE",
 	}
 	StreamFailureType_value = map[string]int32{
 		"STREAM_FAILURE_TYPE_UNSPECIFIED":               0,
@@ -150,6 +153,7 @@ var (
 		"STREAM_FAILURE_TYPE_EPOCH_FENCED":              8,
 		"STREAM_FAILURE_TYPE_SPECULATIVE_WORKFLOW_TASK": 9,
 		"STREAM_FAILURE_TYPE_SEQ_GAP":                   10,
+		"STREAM_FAILURE_TYPE_TOO_LARGE":                 11,
 	}
 )
 
@@ -185,6 +189,8 @@ func (x StreamFailureType) String() string {
 		return "SpeculativeWorkflowTask"
 	case STREAM_FAILURE_TYPE_SEQ_GAP:
 		return "SeqGap"
+	case STREAM_FAILURE_TYPE_TOO_LARGE:
+		return "TooLarge"
 	default:
 		return strconv.Itoa(int(x))
 	}
@@ -1410,7 +1416,7 @@ const file_temporal_api_nexusservices_streamservice_v1_request_response_proto_ra
 	"\x12CLOSE_STATE_FAILED\x10\x02\x12\x18\n" +
 	"\x14CLOSE_STATE_CANCELED\x10\x03\x12\x1a\n" +
 	"\x16CLOSE_STATE_TERMINATED\x10\x04\x12\x19\n" +
-	"\x15CLOSE_STATE_TIMED_OUT\x10\x05*\xac\x03\n" +
+	"\x15CLOSE_STATE_TIMED_OUT\x10\x05*\xcf\x03\n" +
 	"\x11StreamFailureType\x12#\n" +
 	"\x1fSTREAM_FAILURE_TYPE_UNSPECIFIED\x10\x00\x12\x1e\n" +
 	"\x1aSTREAM_FAILURE_TYPE_CLOSED\x10\x01\x12!\n" +
@@ -1423,7 +1429,8 @@ const file_temporal_api_nexusservices_streamservice_v1_request_response_proto_ra
 	" STREAM_FAILURE_TYPE_EPOCH_FENCED\x10\b\x121\n" +
 	"-STREAM_FAILURE_TYPE_SPECULATIVE_WORKFLOW_TASK\x10\t\x12\x1f\n" +
 	"\x1bSTREAM_FAILURE_TYPE_SEQ_GAP\x10\n" +
-	"B\xed\x01\n" +
+	"\x12!\n" +
+	"\x1dSTREAM_FAILURE_TYPE_TOO_LARGE\x10\vB\xed\x01\n" +
 	".io.temporal.api.nexusservices.streamservice.v1B\x14RequestResponseProtoP\x01Z?go.temporal.io/api/nexusservices/streamservice/v1;streamservice\xaa\x02-Temporalio.Api.Nexusservices.Streamservice.V1\xea\x021Temporalio::Api::Nexusservices::Streamservice::V1b\x06proto3"
 
 var (
