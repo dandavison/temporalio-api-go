@@ -118,21 +118,25 @@ const (
 	// The producer's epoch is lower than one already seen, or is not the current attempt.
 	STREAM_FAILURE_TYPE_EPOCH_FENCED              StreamFailureType = 8
 	STREAM_FAILURE_TYPE_SPECULATIVE_WORKFLOW_TASK StreamFailureType = 9
+	// The seq skips one: a new epoch must start at 0, and an epoch's next seq must follow its
+	// latest.
+	STREAM_FAILURE_TYPE_SEQ_GAP StreamFailureType = 10
 )
 
 // Enum value maps for StreamFailureType.
 var (
 	StreamFailureType_name = map[int32]string{
-		0: "STREAM_FAILURE_TYPE_UNSPECIFIED",
-		1: "STREAM_FAILURE_TYPE_CLOSED",
-		2: "STREAM_FAILURE_TYPE_NOT_FOUND",
-		3: "STREAM_FAILURE_TYPE_EXPIRED",
-		4: "STREAM_FAILURE_TYPE_NOT_OWNER",
-		5: "STREAM_FAILURE_TYPE_CURSOR_MISMATCH",
-		6: "STREAM_FAILURE_TYPE_SEQ_DIVERGENT",
-		7: "STREAM_FAILURE_TYPE_SEQ_STALE",
-		8: "STREAM_FAILURE_TYPE_EPOCH_FENCED",
-		9: "STREAM_FAILURE_TYPE_SPECULATIVE_WORKFLOW_TASK",
+		0:  "STREAM_FAILURE_TYPE_UNSPECIFIED",
+		1:  "STREAM_FAILURE_TYPE_CLOSED",
+		2:  "STREAM_FAILURE_TYPE_NOT_FOUND",
+		3:  "STREAM_FAILURE_TYPE_EXPIRED",
+		4:  "STREAM_FAILURE_TYPE_NOT_OWNER",
+		5:  "STREAM_FAILURE_TYPE_CURSOR_MISMATCH",
+		6:  "STREAM_FAILURE_TYPE_SEQ_DIVERGENT",
+		7:  "STREAM_FAILURE_TYPE_SEQ_STALE",
+		8:  "STREAM_FAILURE_TYPE_EPOCH_FENCED",
+		9:  "STREAM_FAILURE_TYPE_SPECULATIVE_WORKFLOW_TASK",
+		10: "STREAM_FAILURE_TYPE_SEQ_GAP",
 	}
 	StreamFailureType_value = map[string]int32{
 		"STREAM_FAILURE_TYPE_UNSPECIFIED":               0,
@@ -145,6 +149,7 @@ var (
 		"STREAM_FAILURE_TYPE_SEQ_STALE":                 7,
 		"STREAM_FAILURE_TYPE_EPOCH_FENCED":              8,
 		"STREAM_FAILURE_TYPE_SPECULATIVE_WORKFLOW_TASK": 9,
+		"STREAM_FAILURE_TYPE_SEQ_GAP":                   10,
 	}
 )
 
@@ -178,6 +183,8 @@ func (x StreamFailureType) String() string {
 
 		// Deprecated: Use StreamFailureType.Descriptor instead.
 		return "SpeculativeWorkflowTask"
+	case STREAM_FAILURE_TYPE_SEQ_GAP:
+		return "SeqGap"
 	default:
 		return strconv.Itoa(int(x))
 	}
@@ -327,6 +334,88 @@ func (x *WorkflowTaskProducer) GetAttempt() int32 {
 	return 0
 }
 
+// A local activity attempt. It runs inside a workflow task of its run, which may complete before the
+// local activity does. The server cannot verify it, because Core, not the server, makes its task
+// token.
+type LocalActivityProducer struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	RunId string                 `protobuf:"bytes,1,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
+	// The workflow task the local activity started in: the started event ID of the run's last
+	// completed workflow task at that time, and that task's attempt.
+	PreviousStartedEventId int64  `protobuf:"varint,2,opt,name=previous_started_event_id,json=previousStartedEventId,proto3" json:"previous_started_event_id,omitempty"`
+	WorkflowTaskAttempt    int32  `protobuf:"varint,3,opt,name=workflow_task_attempt,json=workflowTaskAttempt,proto3" json:"workflow_task_attempt,omitempty"`
+	ActivityId             string `protobuf:"bytes,4,opt,name=activity_id,json=activityId,proto3" json:"activity_id,omitempty"`
+	// The local activity's attempt.
+	Attempt       int32 `protobuf:"varint,5,opt,name=attempt,proto3" json:"attempt,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LocalActivityProducer) Reset() {
+	*x = LocalActivityProducer{}
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LocalActivityProducer) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LocalActivityProducer) ProtoMessage() {}
+
+func (x *LocalActivityProducer) ProtoReflect() protoreflect.Message {
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LocalActivityProducer.ProtoReflect.Descriptor instead.
+func (*LocalActivityProducer) Descriptor() ([]byte, []int) {
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *LocalActivityProducer) GetRunId() string {
+	if x != nil {
+		return x.RunId
+	}
+	return ""
+}
+
+func (x *LocalActivityProducer) GetPreviousStartedEventId() int64 {
+	if x != nil {
+		return x.PreviousStartedEventId
+	}
+	return 0
+}
+
+func (x *LocalActivityProducer) GetWorkflowTaskAttempt() int32 {
+	if x != nil {
+		return x.WorkflowTaskAttempt
+	}
+	return 0
+}
+
+func (x *LocalActivityProducer) GetActivityId() string {
+	if x != nil {
+		return x.ActivityId
+	}
+	return ""
+}
+
+func (x *LocalActivityProducer) GetAttempt() int32 {
+	if x != nil {
+		return x.Attempt
+	}
+	return 0
+}
+
 // A client appending under an identity and epoch that it chooses.
 type ClientProducer struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -338,7 +427,7 @@ type ClientProducer struct {
 
 func (x *ClientProducer) Reset() {
 	*x = ClientProducer{}
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[2]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -350,7 +439,7 @@ func (x *ClientProducer) String() string {
 func (*ClientProducer) ProtoMessage() {}
 
 func (x *ClientProducer) ProtoReflect() protoreflect.Message {
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[2]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -363,7 +452,7 @@ func (x *ClientProducer) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClientProducer.ProtoReflect.Descriptor instead.
 func (*ClientProducer) Descriptor() ([]byte, []int) {
-	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{2}
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ClientProducer) GetId() string {
@@ -387,6 +476,7 @@ type Producer struct {
 	//	*Producer_Client
 	//	*Producer_ActivityTaskToken
 	//	*Producer_WorkflowTask
+	//	*Producer_LocalActivity
 	Variant       isProducer_Variant `protobuf_oneof:"variant"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -394,7 +484,7 @@ type Producer struct {
 
 func (x *Producer) Reset() {
 	*x = Producer{}
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[3]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -406,7 +496,7 @@ func (x *Producer) String() string {
 func (*Producer) ProtoMessage() {}
 
 func (x *Producer) ProtoReflect() protoreflect.Message {
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[3]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -419,7 +509,7 @@ func (x *Producer) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Producer.ProtoReflect.Descriptor instead.
 func (*Producer) Descriptor() ([]byte, []int) {
-	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{3}
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Producer) GetVariant() isProducer_Variant {
@@ -456,6 +546,15 @@ func (x *Producer) GetWorkflowTask() *WorkflowTaskProducer {
 	return nil
 }
 
+func (x *Producer) GetLocalActivity() *LocalActivityProducer {
+	if x != nil {
+		if x, ok := x.Variant.(*Producer_LocalActivity); ok {
+			return x.LocalActivity
+		}
+	}
+	return nil
+}
+
 type isProducer_Variant interface {
 	isProducer_Variant()
 }
@@ -474,27 +573,40 @@ type Producer_WorkflowTask struct {
 	WorkflowTask *WorkflowTaskProducer `protobuf:"bytes,3,opt,name=workflow_task,json=workflowTask,proto3,oneof"`
 }
 
+type Producer_LocalActivity struct {
+	LocalActivity *LocalActivityProducer `protobuf:"bytes,4,opt,name=local_activity,json=localActivity,proto3,oneof"`
+}
+
 func (*Producer_Client) isProducer_Variant() {}
 
 func (*Producer_ActivityTaskToken) isProducer_Variant() {}
 
 func (*Producer_WorkflowTask) isProducer_Variant() {}
 
-// The (producer, epoch, seq) stored with every record. `workflow_task` is set only for a workflow
-// producer, and is part of its epoch.
+func (*Producer_LocalActivity) isProducer_Variant() {}
+
+// The (producer, epoch, seq) stored with every record. A producer's epoch is (workflow_task,
+// workflow_task_attempt, epoch), compared in that order.
+//
+// The workflow fields are set only for workflow and local activity producers: the run, the workflow
+// task the record was appended in (the started event ID of the run's last completed workflow task),
+// and that task's attempt. A reader keeps such a record if the task's commit record names the same
+// attempt, and discards it if the commit record names another.
 type ProducerIdentity struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Producer      string                 `protobuf:"bytes,1,opt,name=producer,proto3" json:"producer,omitempty"`
-	WorkflowTask  int64                  `protobuf:"varint,2,opt,name=workflow_task,json=workflowTask,proto3" json:"workflow_task,omitempty"`
-	Epoch         int64                  `protobuf:"varint,3,opt,name=epoch,proto3" json:"epoch,omitempty"`
-	Seq           int64                  `protobuf:"varint,4,opt,name=seq,proto3" json:"seq,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	Producer            string                 `protobuf:"bytes,1,opt,name=producer,proto3" json:"producer,omitempty"`
+	WorkflowTask        int64                  `protobuf:"varint,2,opt,name=workflow_task,json=workflowTask,proto3" json:"workflow_task,omitempty"`
+	Epoch               int64                  `protobuf:"varint,3,opt,name=epoch,proto3" json:"epoch,omitempty"`
+	Seq                 int64                  `protobuf:"varint,4,opt,name=seq,proto3" json:"seq,omitempty"`
+	WorkflowRunId       string                 `protobuf:"bytes,5,opt,name=workflow_run_id,json=workflowRunId,proto3" json:"workflow_run_id,omitempty"`
+	WorkflowTaskAttempt int32                  `protobuf:"varint,6,opt,name=workflow_task_attempt,json=workflowTaskAttempt,proto3" json:"workflow_task_attempt,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *ProducerIdentity) Reset() {
 	*x = ProducerIdentity{}
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[4]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -506,7 +618,7 @@ func (x *ProducerIdentity) String() string {
 func (*ProducerIdentity) ProtoMessage() {}
 
 func (x *ProducerIdentity) ProtoReflect() protoreflect.Message {
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[4]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -519,7 +631,7 @@ func (x *ProducerIdentity) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProducerIdentity.ProtoReflect.Descriptor instead.
 func (*ProducerIdentity) Descriptor() ([]byte, []int) {
-	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{4}
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ProducerIdentity) GetProducer() string {
@@ -550,6 +662,20 @@ func (x *ProducerIdentity) GetSeq() int64 {
 	return 0
 }
 
+func (x *ProducerIdentity) GetWorkflowRunId() string {
+	if x != nil {
+		return x.WorkflowRunId
+	}
+	return ""
+}
+
+func (x *ProducerIdentity) GetWorkflowTaskAttempt() int32 {
+	if x != nil {
+		return x.WorkflowTaskAttempt
+	}
+	return 0
+}
+
 type AppendRecord struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Topic         string                 `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
@@ -560,7 +686,7 @@ type AppendRecord struct {
 
 func (x *AppendRecord) Reset() {
 	*x = AppendRecord{}
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[5]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -572,7 +698,7 @@ func (x *AppendRecord) String() string {
 func (*AppendRecord) ProtoMessage() {}
 
 func (x *AppendRecord) ProtoReflect() protoreflect.Message {
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[5]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -585,7 +711,7 @@ func (x *AppendRecord) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AppendRecord.ProtoReflect.Descriptor instead.
 func (*AppendRecord) Descriptor() ([]byte, []int) {
-	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{5}
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *AppendRecord) GetTopic() string {
@@ -602,10 +728,11 @@ func (x *AppendRecord) GetPayload() *v1.Payload {
 	return nil
 }
 
-// Records which attempt of a workflow task committed.
+// Records which attempt completed a workflow task. The server writes one for every workflow task of
+// a run whose workflow has a stream.
 type WorkflowTaskCommit struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Producer      string                 `protobuf:"bytes,1,opt,name=producer,proto3" json:"producer,omitempty"`
+	WorkflowRunId string                 `protobuf:"bytes,1,opt,name=workflow_run_id,json=workflowRunId,proto3" json:"workflow_run_id,omitempty"`
 	WorkflowTask  int64                  `protobuf:"varint,2,opt,name=workflow_task,json=workflowTask,proto3" json:"workflow_task,omitempty"`
 	Attempt       int64                  `protobuf:"varint,3,opt,name=attempt,proto3" json:"attempt,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -614,7 +741,7 @@ type WorkflowTaskCommit struct {
 
 func (x *WorkflowTaskCommit) Reset() {
 	*x = WorkflowTaskCommit{}
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[6]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -626,7 +753,7 @@ func (x *WorkflowTaskCommit) String() string {
 func (*WorkflowTaskCommit) ProtoMessage() {}
 
 func (x *WorkflowTaskCommit) ProtoReflect() protoreflect.Message {
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[6]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -639,12 +766,12 @@ func (x *WorkflowTaskCommit) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkflowTaskCommit.ProtoReflect.Descriptor instead.
 func (*WorkflowTaskCommit) Descriptor() ([]byte, []int) {
-	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{6}
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *WorkflowTaskCommit) GetProducer() string {
+func (x *WorkflowTaskCommit) GetWorkflowRunId() string {
 	if x != nil {
-		return x.Producer
+		return x.WorkflowRunId
 	}
 	return ""
 }
@@ -680,7 +807,7 @@ type Record struct {
 
 func (x *Record) Reset() {
 	*x = Record{}
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[7]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -692,7 +819,7 @@ func (x *Record) String() string {
 func (*Record) ProtoMessage() {}
 
 func (x *Record) ProtoReflect() protoreflect.Message {
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[7]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -705,7 +832,7 @@ func (x *Record) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Record.ProtoReflect.Descriptor instead.
 func (*Record) Descriptor() ([]byte, []int) {
-	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{7}
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *Record) GetCursor() []byte {
@@ -761,7 +888,7 @@ type StreamClose struct {
 
 func (x *StreamClose) Reset() {
 	*x = StreamClose{}
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[8]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -773,7 +900,7 @@ func (x *StreamClose) String() string {
 func (*StreamClose) ProtoMessage() {}
 
 func (x *StreamClose) ProtoReflect() protoreflect.Message {
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[8]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -786,7 +913,7 @@ func (x *StreamClose) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamClose.ProtoReflect.Descriptor instead.
 func (*StreamClose) Descriptor() ([]byte, []int) {
-	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{8}
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *StreamClose) GetState() CloseState {
@@ -827,7 +954,7 @@ type AppendRequest struct {
 
 func (x *AppendRequest) Reset() {
 	*x = AppendRequest{}
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[9]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -839,7 +966,7 @@ func (x *AppendRequest) String() string {
 func (*AppendRequest) ProtoMessage() {}
 
 func (x *AppendRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[9]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -852,7 +979,7 @@ func (x *AppendRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AppendRequest.ProtoReflect.Descriptor instead.
 func (*AppendRequest) Descriptor() ([]byte, []int) {
-	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{9}
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *AppendRequest) GetStream() *StreamRef {
@@ -899,7 +1026,7 @@ type AppendResponse struct {
 
 func (x *AppendResponse) Reset() {
 	*x = AppendResponse{}
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[10]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -911,7 +1038,7 @@ func (x *AppendResponse) String() string {
 func (*AppendResponse) ProtoMessage() {}
 
 func (x *AppendResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[10]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -924,7 +1051,7 @@ func (x *AppendResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AppendResponse.ProtoReflect.Descriptor instead.
 func (*AppendResponse) Descriptor() ([]byte, []int) {
-	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{10}
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *AppendResponse) GetCursors() [][]byte {
@@ -956,7 +1083,7 @@ type ReadRequest struct {
 
 func (x *ReadRequest) Reset() {
 	*x = ReadRequest{}
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[11]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -968,7 +1095,7 @@ func (x *ReadRequest) String() string {
 func (*ReadRequest) ProtoMessage() {}
 
 func (x *ReadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[11]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -981,7 +1108,7 @@ func (x *ReadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReadRequest.ProtoReflect.Descriptor instead.
 func (*ReadRequest) Descriptor() ([]byte, []int) {
-	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{11}
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ReadRequest) GetStream() *StreamRef {
@@ -1039,7 +1166,7 @@ type ReadResponse struct {
 
 func (x *ReadResponse) Reset() {
 	*x = ReadResponse{}
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[12]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1051,7 +1178,7 @@ func (x *ReadResponse) String() string {
 func (*ReadResponse) ProtoMessage() {}
 
 func (x *ReadResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[12]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1064,7 +1191,7 @@ func (x *ReadResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReadResponse.ProtoReflect.Descriptor instead.
 func (*ReadResponse) Descriptor() ([]byte, []int) {
-	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{12}
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ReadResponse) GetRecords() []*Record {
@@ -1102,7 +1229,7 @@ type CloseRequest struct {
 
 func (x *CloseRequest) Reset() {
 	*x = CloseRequest{}
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[13]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1114,7 +1241,7 @@ func (x *CloseRequest) String() string {
 func (*CloseRequest) ProtoMessage() {}
 
 func (x *CloseRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[13]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1127,7 +1254,7 @@ func (x *CloseRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CloseRequest.ProtoReflect.Descriptor instead.
 func (*CloseRequest) Descriptor() ([]byte, []int) {
-	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{13}
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *CloseRequest) GetStream() *StreamRef {
@@ -1166,7 +1293,7 @@ type CloseResponse struct {
 
 func (x *CloseResponse) Reset() {
 	*x = CloseResponse{}
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[14]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1178,7 +1305,7 @@ func (x *CloseResponse) String() string {
 func (*CloseResponse) ProtoMessage() {}
 
 func (x *CloseResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[14]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1191,7 +1318,7 @@ func (x *CloseResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CloseResponse.ProtoReflect.Descriptor instead.
 func (*CloseResponse) Descriptor() ([]byte, []int) {
-	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{14}
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{15}
 }
 
 var File_temporal_api_nexusservices_streamservice_v1_request_response_proto protoreflect.FileDescriptor
@@ -1208,25 +1335,35 @@ const file_temporal_api_nexusservices_streamservice_v1_request_response_proto_ra
 	"\x14WorkflowTaskProducer\x12\x15\n" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\x129\n" +
 	"\x19previous_started_event_id\x18\x02 \x01(\x03R\x16previousStartedEventId\x12\x18\n" +
-	"\aattempt\x18\x03 \x01(\x05R\aattempt\"6\n" +
+	"\aattempt\x18\x03 \x01(\x05R\aattempt\"\xd8\x01\n" +
+	"\x15LocalActivityProducer\x12\x15\n" +
+	"\x06run_id\x18\x01 \x01(\tR\x05runId\x129\n" +
+	"\x19previous_started_event_id\x18\x02 \x01(\x03R\x16previousStartedEventId\x122\n" +
+	"\x15workflow_task_attempt\x18\x03 \x01(\x05R\x13workflowTaskAttempt\x12\x1f\n" +
+	"\vactivity_id\x18\x04 \x01(\tR\n" +
+	"activityId\x12\x18\n" +
+	"\aattempt\x18\x05 \x01(\x05R\aattempt\"6\n" +
 	"\x0eClientProducer\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
-	"\x05epoch\x18\x02 \x01(\x03R\x05epoch\"\x88\x02\n" +
+	"\x05epoch\x18\x02 \x01(\x03R\x05epoch\"\xf5\x02\n" +
 	"\bProducer\x12U\n" +
 	"\x06client\x18\x01 \x01(\v2;.temporal.api.nexusservices.streamservice.v1.ClientProducerH\x00R\x06client\x120\n" +
 	"\x13activity_task_token\x18\x02 \x01(\fH\x00R\x11activityTaskToken\x12h\n" +
-	"\rworkflow_task\x18\x03 \x01(\v2A.temporal.api.nexusservices.streamservice.v1.WorkflowTaskProducerH\x00R\fworkflowTaskB\t\n" +
-	"\avariant\"{\n" +
+	"\rworkflow_task\x18\x03 \x01(\v2A.temporal.api.nexusservices.streamservice.v1.WorkflowTaskProducerH\x00R\fworkflowTask\x12k\n" +
+	"\x0elocal_activity\x18\x04 \x01(\v2B.temporal.api.nexusservices.streamservice.v1.LocalActivityProducerH\x00R\rlocalActivityB\t\n" +
+	"\avariant\"\xd7\x01\n" +
 	"\x10ProducerIdentity\x12\x1a\n" +
 	"\bproducer\x18\x01 \x01(\tR\bproducer\x12#\n" +
 	"\rworkflow_task\x18\x02 \x01(\x03R\fworkflowTask\x12\x14\n" +
 	"\x05epoch\x18\x03 \x01(\x03R\x05epoch\x12\x10\n" +
-	"\x03seq\x18\x04 \x01(\x03R\x03seq\"_\n" +
+	"\x03seq\x18\x04 \x01(\x03R\x03seq\x12&\n" +
+	"\x0fworkflow_run_id\x18\x05 \x01(\tR\rworkflowRunId\x122\n" +
+	"\x15workflow_task_attempt\x18\x06 \x01(\x05R\x13workflowTaskAttempt\"_\n" +
 	"\fAppendRecord\x12\x14\n" +
 	"\x05topic\x18\x01 \x01(\tR\x05topic\x129\n" +
-	"\apayload\x18\x02 \x01(\v2\x1f.temporal.api.common.v1.PayloadR\apayload\"o\n" +
-	"\x12WorkflowTaskCommit\x12\x1a\n" +
-	"\bproducer\x18\x01 \x01(\tR\bproducer\x12#\n" +
+	"\apayload\x18\x02 \x01(\v2\x1f.temporal.api.common.v1.PayloadR\apayload\"{\n" +
+	"\x12WorkflowTaskCommit\x12&\n" +
+	"\x0fworkflow_run_id\x18\x01 \x01(\tR\rworkflowRunId\x12#\n" +
 	"\rworkflow_task\x18\x02 \x01(\x03R\fworkflowTask\x12\x18\n" +
 	"\aattempt\x18\x03 \x01(\x03R\aattempt\"\xd7\x02\n" +
 	"\x06Record\x12\x16\n" +
@@ -1273,7 +1410,7 @@ const file_temporal_api_nexusservices_streamservice_v1_request_response_proto_ra
 	"\x12CLOSE_STATE_FAILED\x10\x02\x12\x18\n" +
 	"\x14CLOSE_STATE_CANCELED\x10\x03\x12\x1a\n" +
 	"\x16CLOSE_STATE_TERMINATED\x10\x04\x12\x19\n" +
-	"\x15CLOSE_STATE_TIMED_OUT\x10\x05*\x8b\x03\n" +
+	"\x15CLOSE_STATE_TIMED_OUT\x10\x05*\xac\x03\n" +
 	"\x11StreamFailureType\x12#\n" +
 	"\x1fSTREAM_FAILURE_TYPE_UNSPECIFIED\x10\x00\x12\x1e\n" +
 	"\x1aSTREAM_FAILURE_TYPE_CLOSED\x10\x01\x12!\n" +
@@ -1284,7 +1421,9 @@ const file_temporal_api_nexusservices_streamservice_v1_request_response_proto_ra
 	"!STREAM_FAILURE_TYPE_SEQ_DIVERGENT\x10\x06\x12!\n" +
 	"\x1dSTREAM_FAILURE_TYPE_SEQ_STALE\x10\a\x12$\n" +
 	" STREAM_FAILURE_TYPE_EPOCH_FENCED\x10\b\x121\n" +
-	"-STREAM_FAILURE_TYPE_SPECULATIVE_WORKFLOW_TASK\x10\tB\xed\x01\n" +
+	"-STREAM_FAILURE_TYPE_SPECULATIVE_WORKFLOW_TASK\x10\t\x12\x1f\n" +
+	"\x1bSTREAM_FAILURE_TYPE_SEQ_GAP\x10\n" +
+	"B\xed\x01\n" +
 	".io.temporal.api.nexusservices.streamservice.v1B\x14RequestResponseProtoP\x01Z?go.temporal.io/api/nexusservices/streamservice/v1;streamservice\xaa\x02-Temporalio.Api.Nexusservices.Streamservice.V1\xea\x021Temporalio::Api::Nexusservices::Streamservice::V1b\x06proto3"
 
 var (
@@ -1300,53 +1439,55 @@ func file_temporal_api_nexusservices_streamservice_v1_request_response_proto_raw
 }
 
 var file_temporal_api_nexusservices_streamservice_v1_request_response_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_temporal_api_nexusservices_streamservice_v1_request_response_proto_goTypes = []any{
-	(CloseState)(0),              // 0: temporal.api.nexusservices.streamservice.v1.CloseState
-	(StreamFailureType)(0),       // 1: temporal.api.nexusservices.streamservice.v1.StreamFailureType
-	(*StreamRef)(nil),            // 2: temporal.api.nexusservices.streamservice.v1.StreamRef
-	(*WorkflowTaskProducer)(nil), // 3: temporal.api.nexusservices.streamservice.v1.WorkflowTaskProducer
-	(*ClientProducer)(nil),       // 4: temporal.api.nexusservices.streamservice.v1.ClientProducer
-	(*Producer)(nil),             // 5: temporal.api.nexusservices.streamservice.v1.Producer
-	(*ProducerIdentity)(nil),     // 6: temporal.api.nexusservices.streamservice.v1.ProducerIdentity
-	(*AppendRecord)(nil),         // 7: temporal.api.nexusservices.streamservice.v1.AppendRecord
-	(*WorkflowTaskCommit)(nil),   // 8: temporal.api.nexusservices.streamservice.v1.WorkflowTaskCommit
-	(*Record)(nil),               // 9: temporal.api.nexusservices.streamservice.v1.Record
-	(*StreamClose)(nil),          // 10: temporal.api.nexusservices.streamservice.v1.StreamClose
-	(*AppendRequest)(nil),        // 11: temporal.api.nexusservices.streamservice.v1.AppendRequest
-	(*AppendResponse)(nil),       // 12: temporal.api.nexusservices.streamservice.v1.AppendResponse
-	(*ReadRequest)(nil),          // 13: temporal.api.nexusservices.streamservice.v1.ReadRequest
-	(*ReadResponse)(nil),         // 14: temporal.api.nexusservices.streamservice.v1.ReadResponse
-	(*CloseRequest)(nil),         // 15: temporal.api.nexusservices.streamservice.v1.CloseRequest
-	(*CloseResponse)(nil),        // 16: temporal.api.nexusservices.streamservice.v1.CloseResponse
-	(*v1.Payload)(nil),           // 17: temporal.api.common.v1.Payload
-	(*v11.Failure)(nil),          // 18: temporal.api.failure.v1.Failure
-	(*durationpb.Duration)(nil),  // 19: google.protobuf.Duration
+	(CloseState)(0),               // 0: temporal.api.nexusservices.streamservice.v1.CloseState
+	(StreamFailureType)(0),        // 1: temporal.api.nexusservices.streamservice.v1.StreamFailureType
+	(*StreamRef)(nil),             // 2: temporal.api.nexusservices.streamservice.v1.StreamRef
+	(*WorkflowTaskProducer)(nil),  // 3: temporal.api.nexusservices.streamservice.v1.WorkflowTaskProducer
+	(*LocalActivityProducer)(nil), // 4: temporal.api.nexusservices.streamservice.v1.LocalActivityProducer
+	(*ClientProducer)(nil),        // 5: temporal.api.nexusservices.streamservice.v1.ClientProducer
+	(*Producer)(nil),              // 6: temporal.api.nexusservices.streamservice.v1.Producer
+	(*ProducerIdentity)(nil),      // 7: temporal.api.nexusservices.streamservice.v1.ProducerIdentity
+	(*AppendRecord)(nil),          // 8: temporal.api.nexusservices.streamservice.v1.AppendRecord
+	(*WorkflowTaskCommit)(nil),    // 9: temporal.api.nexusservices.streamservice.v1.WorkflowTaskCommit
+	(*Record)(nil),                // 10: temporal.api.nexusservices.streamservice.v1.Record
+	(*StreamClose)(nil),           // 11: temporal.api.nexusservices.streamservice.v1.StreamClose
+	(*AppendRequest)(nil),         // 12: temporal.api.nexusservices.streamservice.v1.AppendRequest
+	(*AppendResponse)(nil),        // 13: temporal.api.nexusservices.streamservice.v1.AppendResponse
+	(*ReadRequest)(nil),           // 14: temporal.api.nexusservices.streamservice.v1.ReadRequest
+	(*ReadResponse)(nil),          // 15: temporal.api.nexusservices.streamservice.v1.ReadResponse
+	(*CloseRequest)(nil),          // 16: temporal.api.nexusservices.streamservice.v1.CloseRequest
+	(*CloseResponse)(nil),         // 17: temporal.api.nexusservices.streamservice.v1.CloseResponse
+	(*v1.Payload)(nil),            // 18: temporal.api.common.v1.Payload
+	(*v11.Failure)(nil),           // 19: temporal.api.failure.v1.Failure
+	(*durationpb.Duration)(nil),   // 20: google.protobuf.Duration
 }
 var file_temporal_api_nexusservices_streamservice_v1_request_response_proto_depIdxs = []int32{
-	4,  // 0: temporal.api.nexusservices.streamservice.v1.Producer.client:type_name -> temporal.api.nexusservices.streamservice.v1.ClientProducer
+	5,  // 0: temporal.api.nexusservices.streamservice.v1.Producer.client:type_name -> temporal.api.nexusservices.streamservice.v1.ClientProducer
 	3,  // 1: temporal.api.nexusservices.streamservice.v1.Producer.workflow_task:type_name -> temporal.api.nexusservices.streamservice.v1.WorkflowTaskProducer
-	17, // 2: temporal.api.nexusservices.streamservice.v1.AppendRecord.payload:type_name -> temporal.api.common.v1.Payload
-	6,  // 3: temporal.api.nexusservices.streamservice.v1.Record.producer:type_name -> temporal.api.nexusservices.streamservice.v1.ProducerIdentity
-	17, // 4: temporal.api.nexusservices.streamservice.v1.Record.payload:type_name -> temporal.api.common.v1.Payload
-	8,  // 5: temporal.api.nexusservices.streamservice.v1.Record.workflow_task_commit:type_name -> temporal.api.nexusservices.streamservice.v1.WorkflowTaskCommit
-	0,  // 6: temporal.api.nexusservices.streamservice.v1.StreamClose.state:type_name -> temporal.api.nexusservices.streamservice.v1.CloseState
-	18, // 7: temporal.api.nexusservices.streamservice.v1.StreamClose.failure:type_name -> temporal.api.failure.v1.Failure
-	2,  // 8: temporal.api.nexusservices.streamservice.v1.AppendRequest.stream:type_name -> temporal.api.nexusservices.streamservice.v1.StreamRef
-	5,  // 9: temporal.api.nexusservices.streamservice.v1.AppendRequest.producer:type_name -> temporal.api.nexusservices.streamservice.v1.Producer
-	7,  // 10: temporal.api.nexusservices.streamservice.v1.AppendRequest.records:type_name -> temporal.api.nexusservices.streamservice.v1.AppendRecord
-	2,  // 11: temporal.api.nexusservices.streamservice.v1.ReadRequest.stream:type_name -> temporal.api.nexusservices.streamservice.v1.StreamRef
-	19, // 12: temporal.api.nexusservices.streamservice.v1.ReadRequest.wait:type_name -> google.protobuf.Duration
-	9,  // 13: temporal.api.nexusservices.streamservice.v1.ReadResponse.records:type_name -> temporal.api.nexusservices.streamservice.v1.Record
-	10, // 14: temporal.api.nexusservices.streamservice.v1.ReadResponse.close:type_name -> temporal.api.nexusservices.streamservice.v1.StreamClose
-	2,  // 15: temporal.api.nexusservices.streamservice.v1.CloseRequest.stream:type_name -> temporal.api.nexusservices.streamservice.v1.StreamRef
-	3,  // 16: temporal.api.nexusservices.streamservice.v1.CloseRequest.owner:type_name -> temporal.api.nexusservices.streamservice.v1.WorkflowTaskProducer
-	10, // 17: temporal.api.nexusservices.streamservice.v1.CloseRequest.close:type_name -> temporal.api.nexusservices.streamservice.v1.StreamClose
-	18, // [18:18] is the sub-list for method output_type
-	18, // [18:18] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	4,  // 2: temporal.api.nexusservices.streamservice.v1.Producer.local_activity:type_name -> temporal.api.nexusservices.streamservice.v1.LocalActivityProducer
+	18, // 3: temporal.api.nexusservices.streamservice.v1.AppendRecord.payload:type_name -> temporal.api.common.v1.Payload
+	7,  // 4: temporal.api.nexusservices.streamservice.v1.Record.producer:type_name -> temporal.api.nexusservices.streamservice.v1.ProducerIdentity
+	18, // 5: temporal.api.nexusservices.streamservice.v1.Record.payload:type_name -> temporal.api.common.v1.Payload
+	9,  // 6: temporal.api.nexusservices.streamservice.v1.Record.workflow_task_commit:type_name -> temporal.api.nexusservices.streamservice.v1.WorkflowTaskCommit
+	0,  // 7: temporal.api.nexusservices.streamservice.v1.StreamClose.state:type_name -> temporal.api.nexusservices.streamservice.v1.CloseState
+	19, // 8: temporal.api.nexusservices.streamservice.v1.StreamClose.failure:type_name -> temporal.api.failure.v1.Failure
+	2,  // 9: temporal.api.nexusservices.streamservice.v1.AppendRequest.stream:type_name -> temporal.api.nexusservices.streamservice.v1.StreamRef
+	6,  // 10: temporal.api.nexusservices.streamservice.v1.AppendRequest.producer:type_name -> temporal.api.nexusservices.streamservice.v1.Producer
+	8,  // 11: temporal.api.nexusservices.streamservice.v1.AppendRequest.records:type_name -> temporal.api.nexusservices.streamservice.v1.AppendRecord
+	2,  // 12: temporal.api.nexusservices.streamservice.v1.ReadRequest.stream:type_name -> temporal.api.nexusservices.streamservice.v1.StreamRef
+	20, // 13: temporal.api.nexusservices.streamservice.v1.ReadRequest.wait:type_name -> google.protobuf.Duration
+	10, // 14: temporal.api.nexusservices.streamservice.v1.ReadResponse.records:type_name -> temporal.api.nexusservices.streamservice.v1.Record
+	11, // 15: temporal.api.nexusservices.streamservice.v1.ReadResponse.close:type_name -> temporal.api.nexusservices.streamservice.v1.StreamClose
+	2,  // 16: temporal.api.nexusservices.streamservice.v1.CloseRequest.stream:type_name -> temporal.api.nexusservices.streamservice.v1.StreamRef
+	3,  // 17: temporal.api.nexusservices.streamservice.v1.CloseRequest.owner:type_name -> temporal.api.nexusservices.streamservice.v1.WorkflowTaskProducer
+	11, // 18: temporal.api.nexusservices.streamservice.v1.CloseRequest.close:type_name -> temporal.api.nexusservices.streamservice.v1.StreamClose
+	19, // [19:19] is the sub-list for method output_type
+	19, // [19:19] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_temporal_api_nexusservices_streamservice_v1_request_response_proto_init() }
@@ -1354,10 +1495,11 @@ func file_temporal_api_nexusservices_streamservice_v1_request_response_proto_ini
 	if File_temporal_api_nexusservices_streamservice_v1_request_response_proto != nil {
 		return
 	}
-	file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[3].OneofWrappers = []any{
+	file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[4].OneofWrappers = []any{
 		(*Producer_Client)(nil),
 		(*Producer_ActivityTaskToken)(nil),
 		(*Producer_WorkflowTask)(nil),
+		(*Producer_LocalActivity)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1365,7 +1507,7 @@ func file_temporal_api_nexusservices_streamservice_v1_request_response_proto_ini
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDesc), len(file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   15,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
