@@ -112,9 +112,9 @@ const (
 	// The cursor belongs to another stream.
 	STREAM_FAILURE_TYPE_CURSOR_MISMATCH StreamFailureType = 5
 	// The seq is already stored with different content.
-	STREAM_FAILURE_TYPE_SEQ_CONFLICT StreamFailureType = 6
-	// The seq is lower than the producer's latest.
-	STREAM_FAILURE_TYPE_SEQ_SUPERSEDED StreamFailureType = 7
+	STREAM_FAILURE_TYPE_SEQ_DIVERGENT StreamFailureType = 6
+	// The seq is lower than the producer's latest: a stale sequence.
+	STREAM_FAILURE_TYPE_SEQ_STALE StreamFailureType = 7
 	// The producer's epoch is lower than one already seen, or is not the current attempt.
 	STREAM_FAILURE_TYPE_EPOCH_FENCED              StreamFailureType = 8
 	STREAM_FAILURE_TYPE_SPECULATIVE_WORKFLOW_TASK StreamFailureType = 9
@@ -129,8 +129,8 @@ var (
 		3: "STREAM_FAILURE_TYPE_EXPIRED",
 		4: "STREAM_FAILURE_TYPE_NOT_OWNER",
 		5: "STREAM_FAILURE_TYPE_CURSOR_MISMATCH",
-		6: "STREAM_FAILURE_TYPE_SEQ_CONFLICT",
-		7: "STREAM_FAILURE_TYPE_SEQ_SUPERSEDED",
+		6: "STREAM_FAILURE_TYPE_SEQ_DIVERGENT",
+		7: "STREAM_FAILURE_TYPE_SEQ_STALE",
 		8: "STREAM_FAILURE_TYPE_EPOCH_FENCED",
 		9: "STREAM_FAILURE_TYPE_SPECULATIVE_WORKFLOW_TASK",
 	}
@@ -141,8 +141,8 @@ var (
 		"STREAM_FAILURE_TYPE_EXPIRED":                   3,
 		"STREAM_FAILURE_TYPE_NOT_OWNER":                 4,
 		"STREAM_FAILURE_TYPE_CURSOR_MISMATCH":           5,
-		"STREAM_FAILURE_TYPE_SEQ_CONFLICT":              6,
-		"STREAM_FAILURE_TYPE_SEQ_SUPERSEDED":            7,
+		"STREAM_FAILURE_TYPE_SEQ_DIVERGENT":             6,
+		"STREAM_FAILURE_TYPE_SEQ_STALE":                 7,
 		"STREAM_FAILURE_TYPE_EPOCH_FENCED":              8,
 		"STREAM_FAILURE_TYPE_SPECULATIVE_WORKFLOW_TASK": 9,
 	}
@@ -168,10 +168,10 @@ func (x StreamFailureType) String() string {
 		return "NotOwner"
 	case STREAM_FAILURE_TYPE_CURSOR_MISMATCH:
 		return "CursorMismatch"
-	case STREAM_FAILURE_TYPE_SEQ_CONFLICT:
-		return "SeqConflict"
-	case STREAM_FAILURE_TYPE_SEQ_SUPERSEDED:
-		return "SeqSuperseded"
+	case STREAM_FAILURE_TYPE_SEQ_DIVERGENT:
+		return "SeqDivergent"
+	case STREAM_FAILURE_TYPE_SEQ_STALE:
+		return "SeqStale"
 	case STREAM_FAILURE_TYPE_EPOCH_FENCED:
 		return "EpochFenced"
 	case STREAM_FAILURE_TYPE_SPECULATIVE_WORKFLOW_TASK:
@@ -550,7 +550,7 @@ func (x *ProducerIdentity) GetSeq() int64 {
 	return 0
 }
 
-type RecordInput struct {
+type AppendRecord struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Topic         string                 `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
 	Payload       *v1.Payload            `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
@@ -558,20 +558,20 @@ type RecordInput struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *RecordInput) Reset() {
-	*x = RecordInput{}
+func (x *AppendRecord) Reset() {
+	*x = AppendRecord{}
 	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *RecordInput) String() string {
+func (x *AppendRecord) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*RecordInput) ProtoMessage() {}
+func (*AppendRecord) ProtoMessage() {}
 
-func (x *RecordInput) ProtoReflect() protoreflect.Message {
+func (x *AppendRecord) ProtoReflect() protoreflect.Message {
 	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -583,19 +583,19 @@ func (x *RecordInput) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use RecordInput.ProtoReflect.Descriptor instead.
-func (*RecordInput) Descriptor() ([]byte, []int) {
+// Deprecated: Use AppendRecord.ProtoReflect.Descriptor instead.
+func (*AppendRecord) Descriptor() ([]byte, []int) {
 	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *RecordInput) GetTopic() string {
+func (x *AppendRecord) GetTopic() string {
 	if x != nil {
 		return x.Topic
 	}
 	return ""
 }
 
-func (x *RecordInput) GetPayload() *v1.Payload {
+func (x *AppendRecord) GetPayload() *v1.Payload {
 	if x != nil {
 		return x.Payload
 	}
@@ -818,7 +818,7 @@ type AppendRequest struct {
 	Stream   *StreamRef             `protobuf:"bytes,1,opt,name=stream,proto3" json:"stream,omitempty"`
 	Producer *Producer              `protobuf:"bytes,2,opt,name=producer,proto3" json:"producer,omitempty"`
 	Seq      int64                  `protobuf:"varint,3,opt,name=seq,proto3" json:"seq,omitempty"`
-	Records  []*RecordInput         `protobuf:"bytes,4,rep,name=records,proto3" json:"records,omitempty"`
+	Records  []*AppendRecord        `protobuf:"bytes,4,rep,name=records,proto3" json:"records,omitempty"`
 	// Records that the producer will write no more. It does not close the stream.
 	Finish        bool `protobuf:"varint,5,opt,name=finish,proto3" json:"finish,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -876,7 +876,7 @@ func (x *AppendRequest) GetSeq() int64 {
 	return 0
 }
 
-func (x *AppendRequest) GetRecords() []*RecordInput {
+func (x *AppendRequest) GetRecords() []*AppendRecord {
 	if x != nil {
 		return x.Records
 	}
@@ -939,7 +939,10 @@ type ReadRequest struct {
 	state  protoimpl.MessageState `protogen:"open.v1"`
 	Stream *StreamRef             `protobuf:"bytes,1,opt,name=stream,proto3" json:"stream,omitempty"`
 	// Reads the records after this cursor. Empty means from the beginning.
-	Cursor []byte `protobuf:"bytes,2,opt,name=cursor,proto3" json:"cursor,omitempty"`
+	// (-- api-linter: core::0140::prepositions=disabled
+	//
+	//	aip.dev/not-precedent: a read starts AFTER(cursor), the boundary after the last record the reader has seen. --)
+	After []byte `protobuf:"bytes,2,opt,name=after,proto3" json:"after,omitempty"`
 	// Empty means all topics.
 	Topics     []string `protobuf:"bytes,3,rep,name=topics,proto3" json:"topics,omitempty"`
 	MaxRecords int32    `protobuf:"varint,4,opt,name=max_records,json=maxRecords,proto3" json:"max_records,omitempty"`
@@ -988,9 +991,9 @@ func (x *ReadRequest) GetStream() *StreamRef {
 	return nil
 }
 
-func (x *ReadRequest) GetCursor() []byte {
+func (x *ReadRequest) GetAfter() []byte {
 	if x != nil {
-		return x.Cursor
+		return x.After
 	}
 	return nil
 }
@@ -1218,8 +1221,8 @@ const file_temporal_api_nexusservices_streamservice_v1_request_response_proto_ra
 	"\bproducer\x18\x01 \x01(\tR\bproducer\x12#\n" +
 	"\rworkflow_task\x18\x02 \x01(\x03R\fworkflowTask\x12\x14\n" +
 	"\x05epoch\x18\x03 \x01(\x03R\x05epoch\x12\x10\n" +
-	"\x03seq\x18\x04 \x01(\x03R\x03seq\"^\n" +
-	"\vRecordInput\x12\x14\n" +
+	"\x03seq\x18\x04 \x01(\x03R\x03seq\"_\n" +
+	"\fAppendRecord\x12\x14\n" +
 	"\x05topic\x18\x01 \x01(\tR\x05topic\x129\n" +
 	"\apayload\x18\x02 \x01(\v2\x1f.temporal.api.common.v1.PayloadR\apayload\"o\n" +
 	"\x12WorkflowTaskCommit\x12\x1a\n" +
@@ -1236,18 +1239,18 @@ const file_temporal_api_nexusservices_streamservice_v1_request_response_proto_ra
 	"\vStreamClose\x12M\n" +
 	"\x05state\x18\x01 \x01(\x0e27.temporal.api.nexusservices.streamservice.v1.CloseStateR\x05state\x12:\n" +
 	"\afailure\x18\x02 \x01(\v2 .temporal.api.failure.v1.FailureR\afailure\x12\x16\n" +
-	"\x06reason\x18\x03 \x01(\tR\x06reason\"\xb0\x02\n" +
+	"\x06reason\x18\x03 \x01(\tR\x06reason\"\xb1\x02\n" +
 	"\rAppendRequest\x12N\n" +
 	"\x06stream\x18\x01 \x01(\v26.temporal.api.nexusservices.streamservice.v1.StreamRefR\x06stream\x12Q\n" +
 	"\bproducer\x18\x02 \x01(\v25.temporal.api.nexusservices.streamservice.v1.ProducerR\bproducer\x12\x10\n" +
-	"\x03seq\x18\x03 \x01(\x03R\x03seq\x12R\n" +
-	"\arecords\x18\x04 \x03(\v28.temporal.api.nexusservices.streamservice.v1.RecordInputR\arecords\x12\x16\n" +
+	"\x03seq\x18\x03 \x01(\x03R\x03seq\x12S\n" +
+	"\arecords\x18\x04 \x03(\v29.temporal.api.nexusservices.streamservice.v1.AppendRecordR\arecords\x12\x16\n" +
 	"\x06finish\x18\x05 \x01(\bR\x06finish\"*\n" +
 	"\x0eAppendResponse\x12\x18\n" +
-	"\acursors\x18\x01 \x03(\fR\acursors\"\xf1\x01\n" +
+	"\acursors\x18\x01 \x03(\fR\acursors\"\xef\x01\n" +
 	"\vReadRequest\x12N\n" +
-	"\x06stream\x18\x01 \x01(\v26.temporal.api.nexusservices.streamservice.v1.StreamRefR\x06stream\x12\x16\n" +
-	"\x06cursor\x18\x02 \x01(\fR\x06cursor\x12\x16\n" +
+	"\x06stream\x18\x01 \x01(\v26.temporal.api.nexusservices.streamservice.v1.StreamRefR\x06stream\x12\x14\n" +
+	"\x05after\x18\x02 \x01(\fR\x05after\x12\x16\n" +
 	"\x06topics\x18\x03 \x03(\tR\x06topics\x12\x1f\n" +
 	"\vmax_records\x18\x04 \x01(\x05R\n" +
 	"maxRecords\x12-\n" +
@@ -1270,16 +1273,16 @@ const file_temporal_api_nexusservices_streamservice_v1_request_response_proto_ra
 	"\x12CLOSE_STATE_FAILED\x10\x02\x12\x18\n" +
 	"\x14CLOSE_STATE_CANCELED\x10\x03\x12\x1a\n" +
 	"\x16CLOSE_STATE_TERMINATED\x10\x04\x12\x19\n" +
-	"\x15CLOSE_STATE_TIMED_OUT\x10\x05*\x8f\x03\n" +
+	"\x15CLOSE_STATE_TIMED_OUT\x10\x05*\x8b\x03\n" +
 	"\x11StreamFailureType\x12#\n" +
 	"\x1fSTREAM_FAILURE_TYPE_UNSPECIFIED\x10\x00\x12\x1e\n" +
 	"\x1aSTREAM_FAILURE_TYPE_CLOSED\x10\x01\x12!\n" +
 	"\x1dSTREAM_FAILURE_TYPE_NOT_FOUND\x10\x02\x12\x1f\n" +
 	"\x1bSTREAM_FAILURE_TYPE_EXPIRED\x10\x03\x12!\n" +
 	"\x1dSTREAM_FAILURE_TYPE_NOT_OWNER\x10\x04\x12'\n" +
-	"#STREAM_FAILURE_TYPE_CURSOR_MISMATCH\x10\x05\x12$\n" +
-	" STREAM_FAILURE_TYPE_SEQ_CONFLICT\x10\x06\x12&\n" +
-	"\"STREAM_FAILURE_TYPE_SEQ_SUPERSEDED\x10\a\x12$\n" +
+	"#STREAM_FAILURE_TYPE_CURSOR_MISMATCH\x10\x05\x12%\n" +
+	"!STREAM_FAILURE_TYPE_SEQ_DIVERGENT\x10\x06\x12!\n" +
+	"\x1dSTREAM_FAILURE_TYPE_SEQ_STALE\x10\a\x12$\n" +
 	" STREAM_FAILURE_TYPE_EPOCH_FENCED\x10\b\x121\n" +
 	"-STREAM_FAILURE_TYPE_SPECULATIVE_WORKFLOW_TASK\x10\tB\xed\x01\n" +
 	".io.temporal.api.nexusservices.streamservice.v1B\x14RequestResponseProtoP\x01Z?go.temporal.io/api/nexusservices/streamservice/v1;streamservice\xaa\x02-Temporalio.Api.Nexusservices.Streamservice.V1\xea\x021Temporalio::Api::Nexusservices::Streamservice::V1b\x06proto3"
@@ -1306,7 +1309,7 @@ var file_temporal_api_nexusservices_streamservice_v1_request_response_proto_goTy
 	(*ClientProducer)(nil),       // 4: temporal.api.nexusservices.streamservice.v1.ClientProducer
 	(*Producer)(nil),             // 5: temporal.api.nexusservices.streamservice.v1.Producer
 	(*ProducerIdentity)(nil),     // 6: temporal.api.nexusservices.streamservice.v1.ProducerIdentity
-	(*RecordInput)(nil),          // 7: temporal.api.nexusservices.streamservice.v1.RecordInput
+	(*AppendRecord)(nil),         // 7: temporal.api.nexusservices.streamservice.v1.AppendRecord
 	(*WorkflowTaskCommit)(nil),   // 8: temporal.api.nexusservices.streamservice.v1.WorkflowTaskCommit
 	(*Record)(nil),               // 9: temporal.api.nexusservices.streamservice.v1.Record
 	(*StreamClose)(nil),          // 10: temporal.api.nexusservices.streamservice.v1.StreamClose
@@ -1323,7 +1326,7 @@ var file_temporal_api_nexusservices_streamservice_v1_request_response_proto_goTy
 var file_temporal_api_nexusservices_streamservice_v1_request_response_proto_depIdxs = []int32{
 	4,  // 0: temporal.api.nexusservices.streamservice.v1.Producer.client:type_name -> temporal.api.nexusservices.streamservice.v1.ClientProducer
 	3,  // 1: temporal.api.nexusservices.streamservice.v1.Producer.workflow_task:type_name -> temporal.api.nexusservices.streamservice.v1.WorkflowTaskProducer
-	17, // 2: temporal.api.nexusservices.streamservice.v1.RecordInput.payload:type_name -> temporal.api.common.v1.Payload
+	17, // 2: temporal.api.nexusservices.streamservice.v1.AppendRecord.payload:type_name -> temporal.api.common.v1.Payload
 	6,  // 3: temporal.api.nexusservices.streamservice.v1.Record.producer:type_name -> temporal.api.nexusservices.streamservice.v1.ProducerIdentity
 	17, // 4: temporal.api.nexusservices.streamservice.v1.Record.payload:type_name -> temporal.api.common.v1.Payload
 	8,  // 5: temporal.api.nexusservices.streamservice.v1.Record.workflow_task_commit:type_name -> temporal.api.nexusservices.streamservice.v1.WorkflowTaskCommit
@@ -1331,7 +1334,7 @@ var file_temporal_api_nexusservices_streamservice_v1_request_response_proto_depI
 	18, // 7: temporal.api.nexusservices.streamservice.v1.StreamClose.failure:type_name -> temporal.api.failure.v1.Failure
 	2,  // 8: temporal.api.nexusservices.streamservice.v1.AppendRequest.stream:type_name -> temporal.api.nexusservices.streamservice.v1.StreamRef
 	5,  // 9: temporal.api.nexusservices.streamservice.v1.AppendRequest.producer:type_name -> temporal.api.nexusservices.streamservice.v1.Producer
-	7,  // 10: temporal.api.nexusservices.streamservice.v1.AppendRequest.records:type_name -> temporal.api.nexusservices.streamservice.v1.RecordInput
+	7,  // 10: temporal.api.nexusservices.streamservice.v1.AppendRequest.records:type_name -> temporal.api.nexusservices.streamservice.v1.AppendRecord
 	2,  // 11: temporal.api.nexusservices.streamservice.v1.ReadRequest.stream:type_name -> temporal.api.nexusservices.streamservice.v1.StreamRef
 	19, // 12: temporal.api.nexusservices.streamservice.v1.ReadRequest.wait:type_name -> google.protobuf.Duration
 	9,  // 13: temporal.api.nexusservices.streamservice.v1.ReadResponse.records:type_name -> temporal.api.nexusservices.streamservice.v1.Record

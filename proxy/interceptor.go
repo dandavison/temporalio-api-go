@@ -3640,6 +3640,35 @@ func visitPayloads(
 
 			ctx.Context = prevCtx
 
+		case []*streamservice.AppendRecord:
+			for _, x := range o {
+				if err := visitPayloads(ctx, options, parent, concState, x); err != nil {
+					return err
+				}
+			}
+
+		case *streamservice.AppendRecord:
+
+			if o == nil {
+				continue
+			}
+
+			prevCtx := ctx.Context
+			if options.ContextHook != nil {
+				var hookErr error
+				if ctx.Context, hookErr = options.ContextHook(prevCtx, o); hookErr != nil {
+					return hookErr
+				}
+			}
+
+			if o.Payload != nil {
+				if err := visitPayload(ctx, options, o, concState, &o.Payload); err != nil {
+					return err
+				}
+			}
+
+			ctx.Context = prevCtx
+
 		case *streamservice.AppendRequest:
 
 			if o == nil {
@@ -3727,35 +3756,6 @@ func visitPayloads(
 			}
 
 		case *streamservice.Record:
-
-			if o == nil {
-				continue
-			}
-
-			prevCtx := ctx.Context
-			if options.ContextHook != nil {
-				var hookErr error
-				if ctx.Context, hookErr = options.ContextHook(prevCtx, o); hookErr != nil {
-					return hookErr
-				}
-			}
-
-			if o.Payload != nil {
-				if err := visitPayload(ctx, options, o, concState, &o.Payload); err != nil {
-					return err
-				}
-			}
-
-			ctx.Context = prevCtx
-
-		case []*streamservice.RecordInput:
-			for _, x := range o {
-				if err := visitPayloads(ctx, options, parent, concState, x); err != nil {
-					return err
-				}
-			}
-
-		case *streamservice.RecordInput:
 
 			if o == nil {
 				continue

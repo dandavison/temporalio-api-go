@@ -192,35 +192,35 @@ func (this *ProducerIdentity) Equal(that interface{}) bool {
 	return proto.Equal(this, that1)
 }
 
-// Marshal an object of type RecordInput to the protobuf v3 wire format
-func (val *RecordInput) Marshal() ([]byte, error) {
+// Marshal an object of type AppendRecord to the protobuf v3 wire format
+func (val *AppendRecord) Marshal() ([]byte, error) {
 	return proto.Marshal(val)
 }
 
-// Unmarshal an object of type RecordInput from the protobuf v3 wire format
-func (val *RecordInput) Unmarshal(buf []byte) error {
+// Unmarshal an object of type AppendRecord from the protobuf v3 wire format
+func (val *AppendRecord) Unmarshal(buf []byte) error {
 	return proto.Unmarshal(buf, val)
 }
 
 // Size returns the size of the object, in bytes, once serialized
-func (val *RecordInput) Size() int {
+func (val *AppendRecord) Size() int {
 	return proto.Size(val)
 }
 
-// Equal returns whether two RecordInput values are equivalent by recursively
+// Equal returns whether two AppendRecord values are equivalent by recursively
 // comparing the message's fields.
 // For more information see the documentation for
 // https://pkg.go.dev/google.golang.org/protobuf/proto#Equal
-func (this *RecordInput) Equal(that interface{}) bool {
+func (this *AppendRecord) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	var that1 *RecordInput
+	var that1 *AppendRecord
 	switch t := that.(type) {
-	case *RecordInput:
+	case *AppendRecord:
 		that1 = t
-	case RecordInput:
+	case AppendRecord:
 		that1 = &t
 	default:
 		return false
@@ -592,8 +592,8 @@ var (
 		"Expired":                 3,
 		"NotOwner":                4,
 		"CursorMismatch":          5,
-		"SeqConflict":             6,
-		"SeqSuperseded":           7,
+		"SeqDivergent":            6,
+		"SeqStale":                7,
 		"EpochFenced":             8,
 		"SpeculativeWorkflowTask": 9,
 	}
