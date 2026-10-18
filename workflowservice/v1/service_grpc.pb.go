@@ -884,10 +884,20 @@ type WorkflowServiceClient interface {
 	// The response follows the Nexus RPC spec semantics: synchronous completion, asynchronous start,
 	// or operation error.
 	// Handler errors (e.g., NOT_FOUND, BAD_REQUEST) are returned as gRPC errors.
+	//
+	// (-- Prototype server support: disabled unless frontend.enableDirectNexusCalls is set for the
+	//
+	//	namespace. The server accepts only the System Nexus Endpoint and only operations that
+	//	complete synchronously, and rejects links. request_id is passed to the operation handler;
+	//	the server does not deduplicate requests by it. --)
 	StartNexusOperation(ctx context.Context, in *StartNexusOperationRequest, opts ...grpc.CallOption) (*StartNexusOperationResponse, error)
 	// CancelNexusOperation requests cancellation of a previously started asynchronous Nexus operation.
 	// Cancellation is cooperative: this forwards a cancel request to the handler, but the operation
 	// will only transition to canceled if the handler processes it.
+	//
+	// (-- Prototype server support: returns Unimplemented, because the server supports only
+	//
+	//	synchronous direct Nexus calls. --)
 	CancelNexusOperation(ctx context.Context, in *CancelNexusOperationRequest, opts ...grpc.CallOption) (*CancelNexusOperationResponse, error)
 }
 
@@ -2886,10 +2896,20 @@ type WorkflowServiceServer interface {
 	// The response follows the Nexus RPC spec semantics: synchronous completion, asynchronous start,
 	// or operation error.
 	// Handler errors (e.g., NOT_FOUND, BAD_REQUEST) are returned as gRPC errors.
+	//
+	// (-- Prototype server support: disabled unless frontend.enableDirectNexusCalls is set for the
+	//
+	//	namespace. The server accepts only the System Nexus Endpoint and only operations that
+	//	complete synchronously, and rejects links. request_id is passed to the operation handler;
+	//	the server does not deduplicate requests by it. --)
 	StartNexusOperation(context.Context, *StartNexusOperationRequest) (*StartNexusOperationResponse, error)
 	// CancelNexusOperation requests cancellation of a previously started asynchronous Nexus operation.
 	// Cancellation is cooperative: this forwards a cancel request to the handler, but the operation
 	// will only transition to canceled if the handler processes it.
+	//
+	// (-- Prototype server support: returns Unimplemented, because the server supports only
+	//
+	//	synchronous direct Nexus calls. --)
 	CancelNexusOperation(context.Context, *CancelNexusOperationRequest) (*CancelNexusOperationResponse, error)
 	mustEmbedUnimplementedWorkflowServiceServer()
 }

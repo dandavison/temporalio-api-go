@@ -26,6 +26,9 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// The state a stream closed with: the state its owner ended in, or the state an owner's Close
+// request gave. The server does not close a workflow's stream when the run continues as new, when a
+// cron run completes, or when a failed or timed-out run will be retried.
 type CloseState int32
 
 const (
@@ -105,25 +108,41 @@ type StreamFailureType int32
 
 const (
 	STREAM_FAILURE_TYPE_UNSPECIFIED StreamFailureType = 0
-	STREAM_FAILURE_TYPE_CLOSED      StreamFailureType = 1
-	STREAM_FAILURE_TYPE_NOT_FOUND   StreamFailureType = 2
-	STREAM_FAILURE_TYPE_EXPIRED     StreamFailureType = 3
-	STREAM_FAILURE_TYPE_NOT_OWNER   StreamFailureType = 4
-	// The cursor belongs to another stream.
+	// The stream is closed, so it takes no new appends. A retry of a producer's latest stored append
+	// still succeeds.
+	STREAM_FAILURE_TYPE_CLOSED StreamFailureType = 1
+	// The stream's owner does not exist, or a pinned run chain is not the workflow ID's current one.
+	// A read from the beginning waits instead of failing this way.
+	STREAM_FAILURE_TYPE_NOT_FOUND StreamFailureType = 2
+	// A read after a cursor whose owner, or whose run chain, no longer exists. The server does not
+	// tell an owner removed by retention from one replaced by a new chain with the same ID.
+	STREAM_FAILURE_TYPE_EXPIRED StreamFailureType = 3
+	// A close of an activity-owned stream by anything but the activity's own task token. A non-owner
+	// close of a workflow-owned stream fails as EPOCH_FENCED instead.
+	STREAM_FAILURE_TYPE_NOT_OWNER StreamFailureType = 4
+	// The cursor belongs to another stream, or cannot be decoded. A cursor of an earlier run of the
+	// same workflow chain is not detected; see StreamRef.
 	STREAM_FAILURE_TYPE_CURSOR_MISMATCH StreamFailureType = 5
-	// The seq is already stored with different content.
+	// The seq is the producer's latest in its epoch, but stored with different content.
 	STREAM_FAILURE_TYPE_SEQ_DIVERGENT StreamFailureType = 6
-	// The seq is lower than the producer's latest: a stale sequence.
+	// The seq is lower than the producer's latest in its epoch: a stale sequence. This includes a
+	// retry of an earlier append that was stored, since only the latest is deduplicated.
 	STREAM_FAILURE_TYPE_SEQ_STALE StreamFailureType = 7
-	// The producer's epoch is lower than one already seen, or is not the current attempt.
-	STREAM_FAILURE_TYPE_EPOCH_FENCED              StreamFailureType = 8
+	// The producer's epoch is lower than one already stored for it, or the server found that the
+	// activity or workflow task attempt is not the current one. For a producer the server does not
+	// check, a superseded epoch is fenced only once its successor has appended.
+	STREAM_FAILURE_TYPE_EPOCH_FENCED StreamFailureType = 8
+	// A sink-style append from a speculative workflow task (Update). A discarded speculative task
+	// leaves nothing behind, so the next task can repeat its identity and attempt.
 	STREAM_FAILURE_TYPE_SPECULATIVE_WORKFLOW_TASK StreamFailureType = 9
 	// The seq skips one: a new epoch must start at 0, and an epoch's next seq must follow its
 	// latest.
 	STREAM_FAILURE_TYPE_SEQ_GAP StreamFailureType = 10
 	// A record, or the append as a whole, exceeds a size limit.
 	STREAM_FAILURE_TYPE_TOO_LARGE StreamFailureType = 11
-	// A workflow append is in the other mode from the one its run fixed.
+	// A sink-style workflow append to a stream whose run fixed commit mode. Commit-mode records
+	// after the run fixed sink mode fail the workflow task instead, with an application failure of
+	// type BAD_STREAM_APPEND. A run's workers must agree on the mode.
 	STREAM_FAILURE_TYPE_WORKFLOW_APPEND_MODE_MISMATCH StreamFailureType = 12
 )
 
@@ -198,7 +217,8 @@ func (x StreamFailureType) String() string {
 	case STREAM_FAILURE_TYPE_WORKFLOW_APPEND_MODE_MISMATCH:
 		return "WorkflowAppendModeMismatch"
 
-		// How a workflow appends to its own stream. Fixed per run at its first workflow append.
+		// How a workflow appends to its own stream. Fixed per run at its first workflow append, and recorded
+		// in a WorkflowAppendModeFixed record. A workflow's appends to another owner's stream have no mode.
 	default:
 		return strconv.Itoa(int(x))
 	}
@@ -226,10 +246,11 @@ type WorkflowAppendMode int32
 const (
 	WORKFLOW_APPEND_MODE_UNSPECIFIED WorkflowAppendMode = 0
 	// The worker appends a workflow's records at the end of each activation, before the
-	// activation's completion is sent.
+	// activation's completion is sent. So a failed or timed-out task attempt may already have
+	// delivered records; readers use the commit records to discard them.
 	WORKFLOW_APPEND_MODE_SINK WorkflowAppendMode = 1
-	// The records travel in the workflow task completion and are appended in its transaction.
-	// Native only.
+	// The records travel in the workflow task completion and are appended in its transaction, so
+	// records from a task attempt that does not complete are never delivered. Native only.
 	WORKFLOW_APPEND_MODE_COMMIT WorkflowAppendMode = 2
 )
 
@@ -286,16 +307,24 @@ func (WorkflowAppendMode) EnumDescriptor() ([]byte, []int) {
 
 // A stream, named by its owner: a workflow run chain, by workflow_id and first_run_id, or a
 // Standalone Activity execution, by activity_id and activity_run_id. Exactly one of workflow_id and
-// activity_id is set.
+// activity_id is set; the server rejects a reference with neither or both. A workflow and an
+// activity with the same ID have different streams.
+//
+// A workflow's stream is kept in the run that created it. It is not moved to the next run at
+// continue-as-new, retry or cron, so the next run starts with a new, empty stream, and the earlier
+// run's records can no longer be read. A cursor of the earlier run's stream is not rejected by the
+// new one: a read after it skips the new stream's records up to the cursor's offset.
 type StreamRef struct {
 	state      protoimpl.MessageState `protogen:"open.v1"`
 	WorkflowId string                 `protobuf:"bytes,1,opt,name=workflow_id,json=workflowId,proto3" json:"workflow_id,omitempty"`
-	// Pins the run chain. Empty means the workflow ID's current chain.
+	// Pins the run chain. Empty means the workflow ID's current chain. A pinned chain that is not
+	// the current one fails as NOT_FOUND, without waiting.
 	FirstRunId string `protobuf:"bytes,2,opt,name=first_run_id,json=firstRunId,proto3" json:"first_run_id,omitempty"`
-	// The caller's namespace. The server sets it when empty.
+	// The caller's namespace. The server sets it when empty, and rejects any other namespace.
 	Namespace  string `protobuf:"bytes,3,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	ActivityId string `protobuf:"bytes,4,opt,name=activity_id,json=activityId,proto3" json:"activity_id,omitempty"`
-	// Pins the activity execution. Empty means the activity ID's current execution.
+	// Pins the activity execution. Empty means the activity ID's current execution. A read after a
+	// cursor reads the cursor's execution.
 	ActivityRunId string `protobuf:"bytes,5,opt,name=activity_run_id,json=activityRunId,proto3" json:"activity_run_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -366,12 +395,16 @@ func (x *StreamRef) GetActivityRunId() string {
 	return ""
 }
 
-// A workflow task attempt appending sink-style. The server checks it against the run's current
-// workflow task.
+// A workflow task attempt appending sink-style. On a stream owned by the same workflow, the server
+// checks that run_id is the current run and that a workflow task is started with this
+// previous_started_event_id and attempt; otherwise the append fails as EPOCH_FENCED, so another
+// workflow cannot append to it this way. An append from a speculative workflow task fails as
+// SPECULATIVE_WORKFLOW_TASK. On a stream owned by an activity the server checks none of this.
 type WorkflowTaskProducer struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	RunId string                 `protobuf:"bytes,1,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
-	// The started event ID of the run's last completed workflow task.
+	// The started event ID of the run's last completed workflow task. It identifies the current
+	// workflow task, and is the same for all of its attempts.
 	PreviousStartedEventId int64 `protobuf:"varint,2,opt,name=previous_started_event_id,json=previousStartedEventId,proto3" json:"previous_started_event_id,omitempty"`
 	// The attempt of the current workflow task.
 	Attempt       int32 `protobuf:"varint,3,opt,name=attempt,proto3" json:"attempt,omitempty"`
@@ -432,7 +465,8 @@ func (x *WorkflowTaskProducer) GetAttempt() int32 {
 
 // A local activity attempt. It runs inside a workflow task of its run, which may complete before the
 // local activity does. The server cannot verify it, because Core, not the server, makes its task
-// token.
+// token: on a stream owned by the same workflow the server checks only that run_id is the current
+// run, and on a stream owned by an activity it checks nothing.
 type LocalActivityProducer struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	RunId string                 `protobuf:"bytes,1,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
@@ -512,7 +546,9 @@ func (x *LocalActivityProducer) GetAttempt() int32 {
 	return 0
 }
 
-// A client appending under an identity and epoch that it chooses.
+// A client appending under an identity and epoch that it chooses. The server does not verify it: any
+// caller can append as any client ID, and an append at a higher epoch fences the ID's lower epochs.
+// The server keeps a client's dedupe and fencing state for the life of the stream.
 type ClientProducer struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -661,7 +697,19 @@ type Producer_Client struct {
 
 type Producer_ActivityTaskToken struct {
 	// The task token of an activity attempt. The server derives the producer and its epoch,
-	// the attempt stamp, from it.
+	// the stamp the attempt started with, from it. On a workflow-owned stream the token must be
+	// for the started attempt of an activity of the workflow's current run: a superseded
+	// attempt fails as EPOCH_FENCED, and a token of another workflow or of a Standalone
+	// Activity fails as an invalid argument. On an activity-owned stream the owning activity's
+	// token must be for its current attempt; tokens of other activities are not checked. Task
+	// tokens are not signed, so these checks fence superseded attempts but do not stop a caller
+	// that builds a token. A token from a server that did not stamp tokens carries stamp 0,
+	// which matches a first attempt.
+	//
+	// A workflow activity's retry raises the stamp only when the server is configured to. If it
+	// does not, the retry has the same epoch as the attempt before it, so its appends collide
+	// with that attempt's seqs.
+	// (-- The server setting is system.enableActivityRetryStampIncrement, default false. --)
 	ActivityTaskToken []byte `protobuf:"bytes,2,opt,name=activity_task_token,json=activityTaskToken,proto3,oneof"`
 }
 
@@ -682,12 +730,21 @@ func (*Producer_WorkflowTask) isProducer_Variant() {}
 func (*Producer_LocalActivity) isProducer_Variant() {}
 
 // The (producer, epoch, seq) stored with every record. A producer's epoch is (workflow_task,
-// workflow_task_attempt, epoch), compared in that order.
+// workflow_task_attempt, epoch), compared in that order, and seq orders its appends within an epoch.
+//
+// producer is "client/<id>" for a client, "activity/<workflow run ID>/<activity ID>" for a workflow
+// activity, "activity/<run ID>" for a Standalone Activity, "workflow/<run ID>" for a workflow, and
+// "local-activity/<run ID>/<activity ID>" for a local activity. epoch is the client's epoch, the
+// activity attempt's stamp, the workflow task's attempt, or the local activity's attempt.
 //
 // The workflow fields are set only for workflow and local activity producers: the run, the workflow
-// task the record was appended in (the started event ID of the run's last completed workflow task),
-// and that task's attempt. A reader keeps such a record if the task's commit record names the same
-// attempt, and discards it if the commit record names another.
+// task the record was appended in (for a local activity, the task it started in) as the started
+// event ID of the run's last completed workflow task, and that task's attempt. On a stream owned by
+// the record's workflow, a reader treats such a record of task T as final if T's commit record names
+// the same attempt, withdrawn if it names another, final if T has no commit record and is lower than
+// the StreamCreated record's next_workflow_task, and provisional otherwise. A stream owned by an
+// activity has no commit records, so a reader cannot tell which of a workflow's records there come
+// from a failed task attempt.
 type ProducerIdentity struct {
 	state               protoimpl.MessageState `protogen:"open.v1"`
 	Producer            string                 `protobuf:"bytes,1,opt,name=producer,proto3" json:"producer,omitempty"`
@@ -773,9 +830,12 @@ func (x *ProducerIdentity) GetWorkflowTaskAttempt() int32 {
 }
 
 type AppendRecord struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Topic         string                 `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
-	Payload       *v1.Payload            `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// A label for filtering reads. It is not part of the payload, so a reader can filter without
+	// decoding data.
+	Topic string `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
+	// The payload as the producer encoded it, after its codec. The server does not decode it.
+	Payload       *v1.Payload `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -824,8 +884,10 @@ func (x *AppendRecord) GetPayload() *v1.Payload {
 	return nil
 }
 
-// Records which attempt completed a workflow task. The server writes one for every workflow task of
-// a run whose workflow has a stream.
+// Records which attempt completed a workflow task. The server writes one in the transaction that
+// completes each workflow task of a run whose workflow owns a stream, and none for a rejected
+// speculative task. A workflow task that completed before the stream existed has none; see
+// StreamCreated.
 type WorkflowTaskCommit struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	WorkflowRunId string                 `protobuf:"bytes,1,opt,name=workflow_run_id,json=workflowRunId,proto3" json:"workflow_run_id,omitempty"`
@@ -886,9 +948,11 @@ func (x *WorkflowTaskCommit) GetAttempt() int64 {
 	return 0
 }
 
-// Written when an append creates the stream. The run's workflow tasks whose identity
-// (previous_started_event_id) is lower than next_workflow_task completed before the stream existed,
-// so they have no commit record; readers treat their records as committed.
+// The first record of a workflow-owned stream, written by the append that creates it. The run's
+// workflow tasks whose identity (previous_started_event_id) is lower than next_workflow_task
+// completed before the stream existed, so they have no commit record; readers treat their records as
+// committed. That is wrong in one case: a local activity started in a failed attempt of such a task,
+// and still running after the task's rerun, appends records that readers treat as committed.
 type StreamCreated struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	WorkflowRunId string                 `protobuf:"bytes,1,opt,name=workflow_run_id,json=workflowRunId,proto3" json:"workflow_run_id,omitempty"`
@@ -942,7 +1006,8 @@ func (x *StreamCreated) GetNextWorkflowTask() int64 {
 	return 0
 }
 
-// Written when a run's first workflow append fixes how the run's workflow appends.
+// Written when a run's first workflow append to its workflow's own stream fixes how the run's
+// workflow appends. The mode is fixed per run, at that append, not when the stream is created.
 type WorkflowAppendModeFixed struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	WorkflowRunId string                 `protobuf:"bytes,1,opt,name=workflow_run_id,json=workflowRunId,proto3" json:"workflow_run_id,omitempty"`
@@ -996,8 +1061,13 @@ func (x *WorkflowAppendModeFixed) GetMode() WorkflowAppendMode {
 }
 
 // The body of a protocol message in a workflow task completion: records the workflow appends to its
-// own stream in commit mode. The server appends them in the completion's transaction, with the
-// workflow task as their producer.
+// own stream in commit mode. The server appends them in the completion's transaction, before it
+// records the completion and before a terminal command closes the stream, with the workflow task as
+// their producer, so the task's commit record covers them. They are not written to History. A
+// message the server cannot apply fails the workflow task with cause
+// WORKFLOW_WORKER_UNHANDLED_FAILURE and an application failure of type BAD_STREAM_APPEND. Each
+// message is subject to an append's size limits, and all of a completion's messages are subject to
+// the size limit of the completion request.
 type CommitModeAppend struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Records       []*AppendRecord        `protobuf:"bytes,1,rep,name=records,proto3" json:"records,omitempty"`
@@ -1042,14 +1112,18 @@ func (x *CommitModeAppend) GetRecords() []*AppendRecord {
 	return nil
 }
 
+// A record of the stream: data, a producer's finish, or a marker written by the server. Markers
+// (workflow_task_commit, stream_created, workflow_append_mode) match every topic filter, so a
+// filtered reader can still judge which records to discard.
 type Record struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Marks the boundary after this record.
+	// Marks the boundary after this record. Opaque, and valid only for this stream.
 	Cursor   []byte            `protobuf:"bytes,1,opt,name=cursor,proto3" json:"cursor,omitempty"`
 	Producer *ProducerIdentity `protobuf:"bytes,2,opt,name=producer,proto3" json:"producer,omitempty"`
 	Topic    string            `protobuf:"bytes,3,opt,name=topic,proto3" json:"topic,omitempty"`
 	Payload  *v1.Payload       `protobuf:"bytes,4,opt,name=payload,proto3" json:"payload,omitempty"`
-	// The producer will write no more.
+	// The producer will write no more. The server does not enforce it. A finish record has no
+	// topic, so a topic-filtered read does not return it.
 	Finish bool `protobuf:"varint,5,opt,name=finish,proto3" json:"finish,omitempty"`
 	// Set when this record is a commit marker rather than data.
 	WorkflowTaskCommit *WorkflowTaskCommit `protobuf:"bytes,6,opt,name=workflow_task_commit,json=workflowTaskCommit,proto3" json:"workflow_task_commit,omitempty"`
@@ -1147,11 +1221,16 @@ func (x *Record) GetWorkflowAppendMode() *WorkflowAppendModeFixed {
 	return nil
 }
 
+// How a stream was closed: a status, not a result. The owner's result is the owner's outcome.
 type StreamClose struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	State         CloseState             `protobuf:"varint,1,opt,name=state,proto3,enum=temporal.api.nexusservices.streamservice.v1.CloseState" json:"state,omitempty"`
-	Failure       *v11.Failure           `protobuf:"bytes,2,opt,name=failure,proto3" json:"failure,omitempty"`
-	Reason        string                 `protobuf:"bytes,3,opt,name=reason,proto3" json:"reason,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	State CloseState             `protobuf:"varint,1,opt,name=state,proto3,enum=temporal.api.nexusservices.streamservice.v1.CloseState" json:"state,omitempty"`
+	// The owner's failure. When the owner ends, the server sets it only for a failed workflow, not
+	// for a failed Standalone Activity or another terminal state; readers learn those from the
+	// owner.
+	Failure *v11.Failure `protobuf:"bytes,2,opt,name=failure,proto3" json:"failure,omitempty"`
+	// Set only by an owner's Close request.
+	Reason        string `protobuf:"bytes,3,opt,name=reason,proto3" json:"reason,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1208,15 +1287,25 @@ func (x *StreamClose) GetReason() string {
 }
 
 // Input of the "Append" operation. Appends the records as one atomic, contiguous batch. The first
-// append creates the stream. A retry of the producer's latest seq with the same content stores
-// nothing and returns the original cursors.
+// append creates the stream.
+//
+// seq is 0 for a producer's first append in an epoch and one more than its latest after that, so a
+// producer must not have two appends in flight in one epoch. Only the latest seq is deduplicated: a
+// retry of it with the same content stores nothing and returns the original cursors, and a retry of
+// an earlier seq fails as SEQ_STALE. The content is compared by a hash of the records as sent. The
+// dedupe check comes before the close check, so a retry of a stored append succeeds after close.
+//
+// An append has at most 1000 records, of at most 1 MiB each and 4 MiB in all, counting payloads but
+// not topics. An append to an owner that does not exist fails as NOT_FOUND; one to the stream of an
+// activity that has ended fails as CLOSED.
 type AppendRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	Stream   *StreamRef             `protobuf:"bytes,1,opt,name=stream,proto3" json:"stream,omitempty"`
 	Producer *Producer              `protobuf:"bytes,2,opt,name=producer,proto3" json:"producer,omitempty"`
 	Seq      int64                  `protobuf:"varint,3,opt,name=seq,proto3" json:"seq,omitempty"`
 	Records  []*AppendRecord        `protobuf:"bytes,4,rep,name=records,proto3" json:"records,omitempty"`
-	// Records that the producer will write no more. It does not close the stream.
+	// Records that the producer will write no more. It does not close the stream, and the server
+	// does not reject the producer's later appends.
 	Finish        bool `protobuf:"varint,5,opt,name=finish,proto3" json:"finish,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1288,8 +1377,9 @@ func (x *AppendRequest) GetFinish() bool {
 }
 
 type AppendResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Cursors       [][]byte               `protobuf:"bytes,1,rep,name=cursors,proto3" json:"cursors,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// One per record, in order. There is none for the finish record.
+	Cursors       [][]byte `protobuf:"bytes,1,rep,name=cursors,proto3" json:"cursors,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1335,17 +1425,24 @@ func (x *AppendResponse) GetCursors() [][]byte {
 type ReadRequest struct {
 	state  protoimpl.MessageState `protogen:"open.v1"`
 	Stream *StreamRef             `protobuf:"bytes,1,opt,name=stream,proto3" json:"stream,omitempty"`
-	// Reads the records after this cursor. Empty means from the beginning.
+	// Reads the records after this cursor. Empty means from the beginning. A cursor of another
+	// stream fails as CURSOR_MISMATCH. A read after a cursor whose owner or run chain no longer
+	// exists fails as EXPIRED; a read from the beginning of a stream whose owner does not exist yet
+	// waits, as for an empty stream.
 	// (-- api-linter: core::0140::prepositions=disabled
 	//
 	//	aip.dev/not-precedent: a read starts AFTER(cursor), the boundary after the last record the reader has seen. --)
 	After []byte `protobuf:"bytes,2,opt,name=after,proto3" json:"after,omitempty"`
-	// Empty means all topics.
-	Topics     []string `protobuf:"bytes,3,rep,name=topics,proto3" json:"topics,omitempty"`
-	MaxRecords int32    `protobuf:"varint,4,opt,name=max_records,json=maxRecords,proto3" json:"max_records,omitempty"`
-	// How long the read may wait for a matching record. The server caps it.
+	// Empty means all topics. The server filters, so a filtered read waits only for matching
+	// records.
+	Topics []string `protobuf:"bytes,3,rep,name=topics,proto3" json:"topics,omitempty"`
+	// Zero means 1000. Markers count towards it.
+	MaxRecords int32 `protobuf:"varint,4,opt,name=max_records,json=maxRecords,proto3" json:"max_records,omitempty"`
+	// How long the read may wait for a matching record or the close. Zero returns at once. The
+	// server caps it at 20 s; a reader that wants to wait longer reads again.
 	Wait *durationpb.Duration `protobuf:"bytes,5,opt,name=wait,proto3" json:"wait,omitempty"`
-	// If positive, reads the last N matching records instead.
+	// If positive, reads the last N matching records instead, ignoring the cursor's position and
+	// wait. The response cursor is then the stream's end.
 	Last          int32 `protobuf:"varint,6,opt,name=last,proto3" json:"last,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1426,9 +1523,11 @@ func (x *ReadRequest) GetLast() int32 {
 type ReadResponse struct {
 	state   protoimpl.MessageState `protogen:"open.v1"`
 	Records []*Record              `protobuf:"bytes,1,rep,name=records,proto3" json:"records,omitempty"`
-	// Where the next read resumes, past records a topic filter skipped.
+	// Where the next read resumes: after the last record this read passed, including records a
+	// topic filter skipped. The request's cursor if the read passed none.
 	Cursor []byte `protobuf:"bytes,2,opt,name=cursor,proto3" json:"cursor,omitempty"`
-	// Set once the stream is closed and the reader has every record.
+	// Set once the stream is closed and the reader has every record. A read of the last N records
+	// sets it whenever the stream is closed.
 	Close         *StreamClose `protobuf:"bytes,3,opt,name=close,proto3" json:"close,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1485,18 +1584,23 @@ func (x *ReadResponse) GetClose() *StreamClose {
 	return nil
 }
 
-// Input of the "Close" operation. Only the stream's owner, a workflow task of the owning workflow,
-// may close the stream.
-// Only the stream's owner closes it: for a workflow-owned stream, a workflow task attempt of the
-// run (owner); for an activity-owned stream, the activity's current attempt, by its task token
-// (activity_task_token).
+// Input of the "Close" operation. Only the stream's owner may close the stream: for a
+// workflow-owned stream, an attempt of the owning run's current workflow task (owner), checked as
+// for a workflow task producer, so a close by anyone else fails as EPOCH_FENCED; for an
+// activity-owned stream, the activity's current attempt, by its task token (activity_task_token),
+// so a close by anyone else fails as NOT_OWNER. The server ignores the other owner field.
+//
+// A close is an append of no records by the owner: seq is the owner's next seq in its epoch, and a
+// retry of a stored close succeeds. The server also closes a stream itself, in the transaction in
+// which the owner ends.
 type CloseRequest struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	Stream            *StreamRef             `protobuf:"bytes,1,opt,name=stream,proto3" json:"stream,omitempty"`
-	Owner             *WorkflowTaskProducer  `protobuf:"bytes,2,opt,name=owner,proto3" json:"owner,omitempty"`
-	Seq               int64                  `protobuf:"varint,3,opt,name=seq,proto3" json:"seq,omitempty"`
-	Close             *StreamClose           `protobuf:"bytes,4,opt,name=close,proto3" json:"close,omitempty"`
-	ActivityTaskToken []byte                 `protobuf:"bytes,5,opt,name=activity_task_token,json=activityTaskToken,proto3" json:"activity_task_token,omitempty"`
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Stream *StreamRef             `protobuf:"bytes,1,opt,name=stream,proto3" json:"stream,omitempty"`
+	Owner  *WorkflowTaskProducer  `protobuf:"bytes,2,opt,name=owner,proto3" json:"owner,omitempty"`
+	Seq    int64                  `protobuf:"varint,3,opt,name=seq,proto3" json:"seq,omitempty"`
+	// Its state must not be CLOSE_STATE_UNSPECIFIED.
+	Close             *StreamClose `protobuf:"bytes,4,opt,name=close,proto3" json:"close,omitempty"`
+	ActivityTaskToken []byte       `protobuf:"bytes,5,opt,name=activity_task_token,json=activityTaskToken,proto3" json:"activity_task_token,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
