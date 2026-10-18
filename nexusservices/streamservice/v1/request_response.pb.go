@@ -205,7 +205,9 @@ type StreamRef struct {
 	state      protoimpl.MessageState `protogen:"open.v1"`
 	WorkflowId string                 `protobuf:"bytes,1,opt,name=workflow_id,json=workflowId,proto3" json:"workflow_id,omitempty"`
 	// Pins the run chain. Empty means the workflow ID's current chain.
-	FirstRunId    string `protobuf:"bytes,2,opt,name=first_run_id,json=firstRunId,proto3" json:"first_run_id,omitempty"`
+	FirstRunId string `protobuf:"bytes,2,opt,name=first_run_id,json=firstRunId,proto3" json:"first_run_id,omitempty"`
+	// The caller's namespace. The server sets it when empty.
+	Namespace     string `protobuf:"bytes,3,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -250,6 +252,13 @@ func (x *StreamRef) GetWorkflowId() string {
 func (x *StreamRef) GetFirstRunId() string {
 	if x != nil {
 		return x.FirstRunId
+	}
+	return ""
+}
+
+func (x *StreamRef) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
 	}
 	return ""
 }
@@ -1186,12 +1195,13 @@ var File_temporal_api_nexusservices_streamservice_v1_request_response_proto prot
 
 const file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDesc = "" +
 	"\n" +
-	"Btemporal/api/nexusservices/streamservice/v1/request_response.proto\x12+temporal.api.nexusservices.streamservice.v1\x1a\x1egoogle/protobuf/duration.proto\x1a$temporal/api/common/v1/message.proto\x1a%temporal/api/failure/v1/message.proto\"N\n" +
+	"Btemporal/api/nexusservices/streamservice/v1/request_response.proto\x12+temporal.api.nexusservices.streamservice.v1\x1a\x1egoogle/protobuf/duration.proto\x1a$temporal/api/common/v1/message.proto\x1a%temporal/api/failure/v1/message.proto\"l\n" +
 	"\tStreamRef\x12\x1f\n" +
 	"\vworkflow_id\x18\x01 \x01(\tR\n" +
 	"workflowId\x12 \n" +
 	"\ffirst_run_id\x18\x02 \x01(\tR\n" +
-	"firstRunId\"\x82\x01\n" +
+	"firstRunId\x12\x1c\n" +
+	"\tnamespace\x18\x03 \x01(\tR\tnamespace\"\x82\x01\n" +
 	"\x14WorkflowTaskProducer\x12\x15\n" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\x129\n" +
 	"\x19previous_started_event_id\x18\x02 \x01(\x03R\x16previousStartedEventId\x12\x18\n" +
