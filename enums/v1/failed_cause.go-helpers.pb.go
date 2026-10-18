@@ -48,7 +48,6 @@ var (
 		"ExternalStorageFailure":                              38,
 		"WorkflowPauseRequestedBeforeTaskStarted":             39,
 		"RequestTooLarge":                                     40,
-		"BadStreamAppend":                                     41,
 	}
 )
 
