@@ -17,6 +17,7 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	durationpb "google.golang.org/protobuf/types/known/durationpb"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
@@ -305,6 +306,159 @@ func (x WorkflowAppendMode) Number() protoreflect.EnumNumber {
 // Deprecated: Use WorkflowAppendMode.Descriptor instead.
 func (WorkflowAppendMode) EnumDescriptor() ([]byte, []int) {
 	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{2}
+}
+
+// A stream's mode, which its owner declares, and which decides how workflows read it.
+type StreamMode int32
+
+const (
+	// Not yet known: the owner is a workflow whose first workflow task has not completed. A
+	// workflow does not read the stream until the mode is known; it waits.
+	STREAM_MODE_UNSPECIFIED StreamMode = 0
+	// The default, and always for a Standalone Activity owner. A workflow reads with a local
+	// activity, and records only the range and a digest.
+	STREAM_MODE_SINK StreamMode = 1
+	// Declared by a workflow owner. Its own records are appended at workflow task commit, and a
+	// workflow reads with synchronous Read operations, whose results, Records included, are in its
+	// History.
+	STREAM_MODE_COMMIT StreamMode = 2
+)
+
+// Enum value maps for StreamMode.
+var (
+	StreamMode_name = map[int32]string{
+		0: "STREAM_MODE_UNSPECIFIED",
+		1: "STREAM_MODE_SINK",
+		2: "STREAM_MODE_COMMIT",
+	}
+	StreamMode_value = map[string]int32{
+		"STREAM_MODE_UNSPECIFIED": 0,
+		"STREAM_MODE_SINK":        1,
+		"STREAM_MODE_COMMIT":      2,
+	}
+)
+
+func (x StreamMode) Enum() *StreamMode {
+	p := new(StreamMode)
+	*p = x
+	return p
+}
+
+func (x StreamMode) String() string {
+	switch x {
+	case STREAM_MODE_UNSPECIFIED:
+		return "Unspecified"
+	case STREAM_MODE_SINK:
+		return "Sink"
+	case STREAM_MODE_COMMIT:
+		return "Commit"
+	default:
+		return strconv.Itoa(int(x))
+	}
+
+}
+
+func (StreamMode) Descriptor() protoreflect.EnumDescriptor {
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_enumTypes[3].Descriptor()
+}
+
+func (StreamMode) Type() protoreflect.EnumType {
+	return &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_enumTypes[3]
+}
+
+func (x StreamMode) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use StreamMode.Descriptor instead.
+func (StreamMode) EnumDescriptor() ([]byte, []int) {
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{3}
+}
+
+// Why a Wait completed. Every wake may be spurious: the reader reads again.
+type WakeReason int32
+
+const (
+	WAKE_REASON_UNSPECIFIED WakeReason = 0
+	// A matching record was appended, or Notify was called.
+	WAKE_REASON_APPENDED WakeReason = 1
+	// The stream closed.
+	WAKE_REASON_CLOSED WakeReason = 2
+	// The owner ended without closing the stream (external stores), or continued as new.
+	WAKE_REASON_OWNER_ENDED WakeReason = 3
+	// The owner does not exist.
+	WAKE_REASON_OWNER_NOT_FOUND WakeReason = 4
+	// The stream's mode became known.
+	WAKE_REASON_MODE_KNOWN WakeReason = 5
+	// The subscription expired.
+	WAKE_REASON_EXPIRED WakeReason = 6
+)
+
+// Enum value maps for WakeReason.
+var (
+	WakeReason_name = map[int32]string{
+		0: "WAKE_REASON_UNSPECIFIED",
+		1: "WAKE_REASON_APPENDED",
+		2: "WAKE_REASON_CLOSED",
+		3: "WAKE_REASON_OWNER_ENDED",
+		4: "WAKE_REASON_OWNER_NOT_FOUND",
+		5: "WAKE_REASON_MODE_KNOWN",
+		6: "WAKE_REASON_EXPIRED",
+	}
+	WakeReason_value = map[string]int32{
+		"WAKE_REASON_UNSPECIFIED":     0,
+		"WAKE_REASON_APPENDED":        1,
+		"WAKE_REASON_CLOSED":          2,
+		"WAKE_REASON_OWNER_ENDED":     3,
+		"WAKE_REASON_OWNER_NOT_FOUND": 4,
+		"WAKE_REASON_MODE_KNOWN":      5,
+		"WAKE_REASON_EXPIRED":         6,
+	}
+)
+
+func (x WakeReason) Enum() *WakeReason {
+	p := new(WakeReason)
+	*p = x
+	return p
+}
+
+func (x WakeReason) String() string {
+	switch x {
+	case WAKE_REASON_UNSPECIFIED:
+		return "Unspecified"
+	case WAKE_REASON_APPENDED:
+		return "Appended"
+	case WAKE_REASON_CLOSED:
+		return "Closed"
+	case WAKE_REASON_OWNER_ENDED:
+		return "OwnerEnded"
+	case WAKE_REASON_OWNER_NOT_FOUND:
+		return "OwnerNotFound"
+	case WAKE_REASON_MODE_KNOWN:
+		return "ModeKnown"
+	case WAKE_REASON_EXPIRED:
+		return "Expired"
+	default:
+		return strconv.Itoa(int(x))
+	}
+
+}
+
+func (WakeReason) Descriptor() protoreflect.EnumDescriptor {
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_enumTypes[4].Descriptor()
+}
+
+func (WakeReason) Type() protoreflect.EnumType {
+	return &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_enumTypes[4]
+}
+
+func (x WakeReason) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use WakeReason.Descriptor instead.
+func (WakeReason) EnumDescriptor() ([]byte, []int) {
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{4}
 }
 
 // A stream, named by its owner: a workflow run chain, by workflow_id and first_run_id, or a
@@ -1452,7 +1606,14 @@ type ReadRequest struct {
 	Wait *durationpb.Duration `protobuf:"bytes,5,opt,name=wait,proto3" json:"wait,omitempty"`
 	// If positive, reads the last N matching records instead, ignoring the cursor's position and
 	// wait. The response cursor is then the stream's end.
-	Last          int32 `protobuf:"varint,6,opt,name=last,proto3" json:"last,omitempty"`
+	Last int32 `protobuf:"varint,6,opt,name=last,proto3" json:"last,omitempty"`
+	// If set, reads no record after the one at this cursor, which must be of the same stream. A
+	// workflow's replay re-reads a recorded range with it.
+	Until []byte `protobuf:"bytes,7,opt,name=until,proto3" json:"until,omitempty"`
+	// If positive, the records' payloads total at most this many bytes: the read stops before the
+	// first record that would exceed it, and the response cursor resumes at that record. A record
+	// that alone exceeds it fails the read as TOO_LARGE.
+	MaxBytes      int64 `protobuf:"varint,8,opt,name=max_bytes,json=maxBytes,proto3" json:"max_bytes,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1529,6 +1690,20 @@ func (x *ReadRequest) GetLast() int32 {
 	return 0
 }
 
+func (x *ReadRequest) GetUntil() []byte {
+	if x != nil {
+		return x.Until
+	}
+	return nil
+}
+
+func (x *ReadRequest) GetMaxBytes() int64 {
+	if x != nil {
+		return x.MaxBytes
+	}
+	return 0
+}
+
 type ReadResponse struct {
 	state   protoimpl.MessageState `protogen:"open.v1"`
 	Records []*Record              `protobuf:"bytes,1,rep,name=records,proto3" json:"records,omitempty"`
@@ -1537,7 +1712,13 @@ type ReadResponse struct {
 	Cursor []byte `protobuf:"bytes,2,opt,name=cursor,proto3" json:"cursor,omitempty"`
 	// Set once the stream is closed and the reader has every record. A read of the last N records
 	// sets it whenever the stream is closed.
-	Close         *StreamClose `protobuf:"bytes,3,opt,name=close,proto3" json:"close,omitempty"`
+	Close *StreamClose `protobuf:"bytes,3,opt,name=close,proto3" json:"close,omitempty"`
+	// The stream's mode for the owner's current run.
+	Mode StreamMode `protobuf:"varint,4,opt,name=mode,proto3,enum=temporal.api.nexusservices.streamservice.v1.StreamMode" json:"mode,omitempty"`
+	// Set once the owner has closed. With retention, when the stream will be removed.
+	OwnerCloseTime *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=owner_close_time,json=ownerCloseTime,proto3" json:"owner_close_time,omitempty"`
+	// The namespace's retention, which applies from owner_close_time.
+	Retention     *durationpb.Duration `protobuf:"bytes,6,opt,name=retention,proto3" json:"retention,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1593,6 +1774,465 @@ func (x *ReadResponse) GetClose() *StreamClose {
 	return nil
 }
 
+func (x *ReadResponse) GetMode() StreamMode {
+	if x != nil {
+		return x.Mode
+	}
+	return STREAM_MODE_UNSPECIFIED
+}
+
+func (x *ReadResponse) GetOwnerCloseTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.OwnerCloseTime
+	}
+	return nil
+}
+
+func (x *ReadResponse) GetRetention() *durationpb.Duration {
+	if x != nil {
+		return x.Retention
+	}
+	return nil
+}
+
+// A workflow owner's declaration of its stream's mode, sent as the body of a protocol message in
+// the completion of each run's first workflow task. Only a workflow that declares commit mode sends
+// it; a run that does not send it has a sink-mode stream.
+type StreamModeDeclaration struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Mode          StreamMode             `protobuf:"varint,1,opt,name=mode,proto3,enum=temporal.api.nexusservices.streamservice.v1.StreamMode" json:"mode,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StreamModeDeclaration) Reset() {
+	*x = StreamModeDeclaration{}
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StreamModeDeclaration) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StreamModeDeclaration) ProtoMessage() {}
+
+func (x *StreamModeDeclaration) ProtoReflect() protoreflect.Message {
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StreamModeDeclaration.ProtoReflect.Descriptor instead.
+func (*StreamModeDeclaration) Descriptor() ([]byte, []int) {
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *StreamModeDeclaration) GetMode() StreamMode {
+	if x != nil {
+		return x.Mode
+	}
+	return STREAM_MODE_UNSPECIFIED
+}
+
+// Input of the asynchronous "Wait" operation, which a workflow calls, as an ordinary Nexus
+// operation, after a read returned nothing. It completes at once if what it waits for is already
+// there; otherwise it stores a subscription, which the stream completes once, and removes.
+//
+// For a native stream, set after and topics: the next matching append, or the close, completes it.
+// For a stream in an external store, set notifier: the next Notify of the owner completes it.
+//
+// It also completes when the owner continues as new or closes, when the owner does not exist, when
+// the stream's mode becomes known, and when the subscription expires. A stream holds at most 2,000
+// unfired subscriptions; beyond that Wait fails with ResourceExhausted.
+type WaitRequest struct {
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Stream *StreamRef             `protobuf:"bytes,1,opt,name=stream,proto3" json:"stream,omitempty"`
+	// A native stream: wait for a matching record after this cursor.
+	// (-- api-linter: core::0140::prepositions=disabled
+	//
+	//	aip.dev/not-precedent: as ReadRequest.after. --)
+	After  []byte   `protobuf:"bytes,2,opt,name=after,proto3" json:"after,omitempty"`
+	Topics []string `protobuf:"bytes,3,rep,name=topics,proto3" json:"topics,omitempty"`
+	// A stream in an external store: wait for a Notify after this position.
+	Notifier *NotifierPosition `protobuf:"bytes,4,opt,name=notifier,proto3" json:"notifier,omitempty"`
+	// How long the subscription lives before it expires. Zero means 7 days, the most.
+	Lifetime      *durationpb.Duration `protobuf:"bytes,5,opt,name=lifetime,proto3" json:"lifetime,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WaitRequest) Reset() {
+	*x = WaitRequest{}
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WaitRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WaitRequest) ProtoMessage() {}
+
+func (x *WaitRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WaitRequest.ProtoReflect.Descriptor instead.
+func (*WaitRequest) Descriptor() ([]byte, []int) {
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *WaitRequest) GetStream() *StreamRef {
+	if x != nil {
+		return x.Stream
+	}
+	return nil
+}
+
+func (x *WaitRequest) GetAfter() []byte {
+	if x != nil {
+		return x.After
+	}
+	return nil
+}
+
+func (x *WaitRequest) GetTopics() []string {
+	if x != nil {
+		return x.Topics
+	}
+	return nil
+}
+
+func (x *WaitRequest) GetNotifier() *NotifierPosition {
+	if x != nil {
+		return x.Notifier
+	}
+	return nil
+}
+
+func (x *WaitRequest) GetLifetime() *durationpb.Duration {
+	if x != nil {
+		return x.Lifetime
+	}
+	return nil
+}
+
+// The state of an owner's notifier, for a stream in an external store: a counter that each Notify
+// increments, kept in memory on the owner's History host, and a generation that changes whenever
+// the counter is lost. Wait completes at once if either differs from the current one.
+type NotifierPosition struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Generation    int64                  `protobuf:"varint,1,opt,name=generation,proto3" json:"generation,omitempty"`
+	Counter       int64                  `protobuf:"varint,2,opt,name=counter,proto3" json:"counter,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NotifierPosition) Reset() {
+	*x = NotifierPosition{}
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NotifierPosition) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NotifierPosition) ProtoMessage() {}
+
+func (x *NotifierPosition) ProtoReflect() protoreflect.Message {
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NotifierPosition.ProtoReflect.Descriptor instead.
+func (*NotifierPosition) Descriptor() ([]byte, []int) {
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *NotifierPosition) GetGeneration() int64 {
+	if x != nil {
+		return x.Generation
+	}
+	return 0
+}
+
+func (x *NotifierPosition) GetCounter() int64 {
+	if x != nil {
+		return x.Counter
+	}
+	return 0
+}
+
+type WaitResponse struct {
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Reason WakeReason             `protobuf:"varint,1,opt,name=reason,proto3,enum=temporal.api.nexusservices.streamservice.v1.WakeReason" json:"reason,omitempty"`
+	// Set when reason is OWNER_ENDED: the state the owner ended in.
+	OwnerEnd CloseState `protobuf:"varint,2,opt,name=owner_end,json=ownerEnd,proto3,enum=temporal.api.nexusservices.streamservice.v1.CloseState" json:"owner_end,omitempty"`
+	// The stream's mode, as in ReadResponse.
+	Mode          StreamMode `protobuf:"varint,3,opt,name=mode,proto3,enum=temporal.api.nexusservices.streamservice.v1.StreamMode" json:"mode,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WaitResponse) Reset() {
+	*x = WaitResponse{}
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WaitResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WaitResponse) ProtoMessage() {}
+
+func (x *WaitResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WaitResponse.ProtoReflect.Descriptor instead.
+func (*WaitResponse) Descriptor() ([]byte, []int) {
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *WaitResponse) GetReason() WakeReason {
+	if x != nil {
+		return x.Reason
+	}
+	return WAKE_REASON_UNSPECIFIED
+}
+
+func (x *WaitResponse) GetOwnerEnd() CloseState {
+	if x != nil {
+		return x.OwnerEnd
+	}
+	return CLOSE_STATE_UNSPECIFIED
+}
+
+func (x *WaitResponse) GetMode() StreamMode {
+	if x != nil {
+		return x.Mode
+	}
+	return STREAM_MODE_UNSPECIFIED
+}
+
+// Input of the "NotifierState" operation: reads the owner's notifier position, for a stream in an
+// external store.
+type NotifierStateRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Stream        *StreamRef             `protobuf:"bytes,1,opt,name=stream,proto3" json:"stream,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NotifierStateRequest) Reset() {
+	*x = NotifierStateRequest{}
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NotifierStateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NotifierStateRequest) ProtoMessage() {}
+
+func (x *NotifierStateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NotifierStateRequest.ProtoReflect.Descriptor instead.
+func (*NotifierStateRequest) Descriptor() ([]byte, []int) {
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *NotifierStateRequest) GetStream() *StreamRef {
+	if x != nil {
+		return x.Stream
+	}
+	return nil
+}
+
+type NotifierStateResponse struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Position *NotifierPosition      `protobuf:"bytes,1,opt,name=position,proto3" json:"position,omitempty"`
+	// Set when the owner has ended: the state it ended in.
+	OwnerEnd      CloseState `protobuf:"varint,2,opt,name=owner_end,json=ownerEnd,proto3,enum=temporal.api.nexusservices.streamservice.v1.CloseState" json:"owner_end,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NotifierStateResponse) Reset() {
+	*x = NotifierStateResponse{}
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NotifierStateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NotifierStateResponse) ProtoMessage() {}
+
+func (x *NotifierStateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NotifierStateResponse.ProtoReflect.Descriptor instead.
+func (*NotifierStateResponse) Descriptor() ([]byte, []int) {
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *NotifierStateResponse) GetPosition() *NotifierPosition {
+	if x != nil {
+		return x.Position
+	}
+	return nil
+}
+
+func (x *NotifierStateResponse) GetOwnerEnd() CloseState {
+	if x != nil {
+		return x.OwnerEnd
+	}
+	return CLOSE_STATE_UNSPECIFIED
+}
+
+// Input of the "Notify" operation: a producer to a stream in an external store calls it after
+// appending. It fires the owner's subscriptions, and writes nothing when there are none. A Notify to
+// an owner that does not exist succeeds and does nothing.
+type NotifyRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Stream        *StreamRef             `protobuf:"bytes,1,opt,name=stream,proto3" json:"stream,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NotifyRequest) Reset() {
+	*x = NotifyRequest{}
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NotifyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NotifyRequest) ProtoMessage() {}
+
+func (x *NotifyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NotifyRequest.ProtoReflect.Descriptor instead.
+func (*NotifyRequest) Descriptor() ([]byte, []int) {
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *NotifyRequest) GetStream() *StreamRef {
+	if x != nil {
+		return x.Stream
+	}
+	return nil
+}
+
+type NotifyResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NotifyResponse) Reset() {
+	*x = NotifyResponse{}
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NotifyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NotifyResponse) ProtoMessage() {}
+
+func (x *NotifyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NotifyResponse.ProtoReflect.Descriptor instead.
+func (*NotifyResponse) Descriptor() ([]byte, []int) {
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{24}
+}
+
 // Input of the "Close" operation. Only the stream's owner may close the stream: for a
 // workflow-owned stream, an attempt of the owning run's current workflow task (owner), checked as
 // for a workflow task producer, so a close by anyone else fails as EPOCH_FENCED; for an
@@ -1616,7 +2256,7 @@ type CloseRequest struct {
 
 func (x *CloseRequest) Reset() {
 	*x = CloseRequest{}
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[17]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1628,7 +2268,7 @@ func (x *CloseRequest) String() string {
 func (*CloseRequest) ProtoMessage() {}
 
 func (x *CloseRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[17]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1641,7 +2281,7 @@ func (x *CloseRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CloseRequest.ProtoReflect.Descriptor instead.
 func (*CloseRequest) Descriptor() ([]byte, []int) {
-	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{17}
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *CloseRequest) GetStream() *StreamRef {
@@ -1687,7 +2327,7 @@ type CloseResponse struct {
 
 func (x *CloseResponse) Reset() {
 	*x = CloseResponse{}
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[18]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1699,7 +2339,7 @@ func (x *CloseResponse) String() string {
 func (*CloseResponse) ProtoMessage() {}
 
 func (x *CloseResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[18]
+	mi := &file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1712,14 +2352,14 @@ func (x *CloseResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CloseResponse.ProtoReflect.Descriptor instead.
 func (*CloseResponse) Descriptor() ([]byte, []int) {
-	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{18}
+	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescGZIP(), []int{26}
 }
 
 var File_temporal_api_nexusservices_streamservice_v1_request_response_proto protoreflect.FileDescriptor
 
 const file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDesc = "" +
 	"\n" +
-	"Btemporal/api/nexusservices/streamservice/v1/request_response.proto\x12+temporal.api.nexusservices.streamservice.v1\x1a\x1egoogle/protobuf/duration.proto\x1a$temporal/api/common/v1/message.proto\x1a%temporal/api/failure/v1/message.proto\"\xb5\x01\n" +
+	"Btemporal/api/nexusservices/streamservice/v1/request_response.proto\x12+temporal.api.nexusservices.streamservice.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a$temporal/api/common/v1/message.proto\x1a%temporal/api/failure/v1/message.proto\"\xb5\x01\n" +
 	"\tStreamRef\x12\x1f\n" +
 	"\vworkflow_id\x18\x01 \x01(\tR\n" +
 	"workflowId\x12 \n" +
@@ -1791,7 +2431,7 @@ const file_temporal_api_nexusservices_streamservice_v1_request_response_proto_ra
 	"\arecords\x18\x04 \x03(\v29.temporal.api.nexusservices.streamservice.v1.AppendRecordR\arecords\x12\x16\n" +
 	"\x06finish\x18\x05 \x01(\bR\x06finish\"*\n" +
 	"\x0eAppendResponse\x12\x18\n" +
-	"\acursors\x18\x01 \x03(\fR\acursors\"\xef\x01\n" +
+	"\acursors\x18\x01 \x03(\fR\acursors\"\xa2\x02\n" +
 	"\vReadRequest\x12N\n" +
 	"\x06stream\x18\x01 \x01(\v26.temporal.api.nexusservices.streamservice.v1.StreamRefR\x06stream\x12\x14\n" +
 	"\x05after\x18\x02 \x01(\fR\x05after\x12\x16\n" +
@@ -1799,11 +2439,41 @@ const file_temporal_api_nexusservices_streamservice_v1_request_response_proto_ra
 	"\vmax_records\x18\x04 \x01(\x05R\n" +
 	"maxRecords\x12-\n" +
 	"\x04wait\x18\x05 \x01(\v2\x19.google.protobuf.DurationR\x04wait\x12\x12\n" +
-	"\x04last\x18\x06 \x01(\x05R\x04last\"\xc5\x01\n" +
+	"\x04last\x18\x06 \x01(\x05R\x04last\x12\x14\n" +
+	"\x05until\x18\a \x01(\fR\x05until\x12\x1b\n" +
+	"\tmax_bytes\x18\b \x01(\x03R\bmaxBytes\"\x91\x03\n" +
 	"\fReadResponse\x12M\n" +
 	"\arecords\x18\x01 \x03(\v23.temporal.api.nexusservices.streamservice.v1.RecordR\arecords\x12\x16\n" +
 	"\x06cursor\x18\x02 \x01(\fR\x06cursor\x12N\n" +
-	"\x05close\x18\x03 \x01(\v28.temporal.api.nexusservices.streamservice.v1.StreamCloseR\x05close\"\xc9\x02\n" +
+	"\x05close\x18\x03 \x01(\v28.temporal.api.nexusservices.streamservice.v1.StreamCloseR\x05close\x12K\n" +
+	"\x04mode\x18\x04 \x01(\x0e27.temporal.api.nexusservices.streamservice.v1.StreamModeR\x04mode\x12D\n" +
+	"\x10owner_close_time\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x0eownerCloseTime\x127\n" +
+	"\tretention\x18\x06 \x01(\v2\x19.google.protobuf.DurationR\tretention\"d\n" +
+	"\x15StreamModeDeclaration\x12K\n" +
+	"\x04mode\x18\x01 \x01(\x0e27.temporal.api.nexusservices.streamservice.v1.StreamModeR\x04mode\"\x9d\x02\n" +
+	"\vWaitRequest\x12N\n" +
+	"\x06stream\x18\x01 \x01(\v26.temporal.api.nexusservices.streamservice.v1.StreamRefR\x06stream\x12\x14\n" +
+	"\x05after\x18\x02 \x01(\fR\x05after\x12\x16\n" +
+	"\x06topics\x18\x03 \x03(\tR\x06topics\x12Y\n" +
+	"\bnotifier\x18\x04 \x01(\v2=.temporal.api.nexusservices.streamservice.v1.NotifierPositionR\bnotifier\x125\n" +
+	"\blifetime\x18\x05 \x01(\v2\x19.google.protobuf.DurationR\blifetime\"L\n" +
+	"\x10NotifierPosition\x12\x1e\n" +
+	"\n" +
+	"generation\x18\x01 \x01(\x03R\n" +
+	"generation\x12\x18\n" +
+	"\acounter\x18\x02 \x01(\x03R\acounter\"\x82\x02\n" +
+	"\fWaitResponse\x12O\n" +
+	"\x06reason\x18\x01 \x01(\x0e27.temporal.api.nexusservices.streamservice.v1.WakeReasonR\x06reason\x12T\n" +
+	"\towner_end\x18\x02 \x01(\x0e27.temporal.api.nexusservices.streamservice.v1.CloseStateR\bownerEnd\x12K\n" +
+	"\x04mode\x18\x03 \x01(\x0e27.temporal.api.nexusservices.streamservice.v1.StreamModeR\x04mode\"f\n" +
+	"\x14NotifierStateRequest\x12N\n" +
+	"\x06stream\x18\x01 \x01(\v26.temporal.api.nexusservices.streamservice.v1.StreamRefR\x06stream\"\xc8\x01\n" +
+	"\x15NotifierStateResponse\x12Y\n" +
+	"\bposition\x18\x01 \x01(\v2=.temporal.api.nexusservices.streamservice.v1.NotifierPositionR\bposition\x12T\n" +
+	"\towner_end\x18\x02 \x01(\x0e27.temporal.api.nexusservices.streamservice.v1.CloseStateR\bownerEnd\"_\n" +
+	"\rNotifyRequest\x12N\n" +
+	"\x06stream\x18\x01 \x01(\v26.temporal.api.nexusservices.streamservice.v1.StreamRefR\x06stream\"\x10\n" +
+	"\x0eNotifyResponse\"\xc9\x02\n" +
 	"\fCloseRequest\x12N\n" +
 	"\x06stream\x18\x01 \x01(\v26.temporal.api.nexusservices.streamservice.v1.StreamRefR\x06stream\x12W\n" +
 	"\x05owner\x18\x02 \x01(\v2A.temporal.api.nexusservices.streamservice.v1.WorkflowTaskProducerR\x05owner\x12\x10\n" +
@@ -1837,7 +2507,21 @@ const file_temporal_api_nexusservices_streamservice_v1_request_response_proto_ra
 	"\x12WorkflowAppendMode\x12$\n" +
 	" WORKFLOW_APPEND_MODE_UNSPECIFIED\x10\x00\x12\x1d\n" +
 	"\x19WORKFLOW_APPEND_MODE_SINK\x10\x01\x12\x1f\n" +
-	"\x1bWORKFLOW_APPEND_MODE_COMMIT\x10\x02B\xed\x01\n" +
+	"\x1bWORKFLOW_APPEND_MODE_COMMIT\x10\x02*W\n" +
+	"\n" +
+	"StreamMode\x12\x1b\n" +
+	"\x17STREAM_MODE_UNSPECIFIED\x10\x00\x12\x14\n" +
+	"\x10STREAM_MODE_SINK\x10\x01\x12\x16\n" +
+	"\x12STREAM_MODE_COMMIT\x10\x02*\xce\x01\n" +
+	"\n" +
+	"WakeReason\x12\x1b\n" +
+	"\x17WAKE_REASON_UNSPECIFIED\x10\x00\x12\x18\n" +
+	"\x14WAKE_REASON_APPENDED\x10\x01\x12\x16\n" +
+	"\x12WAKE_REASON_CLOSED\x10\x02\x12\x1b\n" +
+	"\x17WAKE_REASON_OWNER_ENDED\x10\x03\x12\x1f\n" +
+	"\x1bWAKE_REASON_OWNER_NOT_FOUND\x10\x04\x12\x1a\n" +
+	"\x16WAKE_REASON_MODE_KNOWN\x10\x05\x12\x17\n" +
+	"\x13WAKE_REASON_EXPIRED\x10\x06B\xed\x01\n" +
 	".io.temporal.api.nexusservices.streamservice.v1B\x14RequestResponseProtoP\x01Z?go.temporal.io/api/nexusservices/streamservice/v1;streamservice\xaa\x02-Temporalio.Api.Nexusservices.Streamservice.V1\xea\x021Temporalio::Api::Nexusservices::Streamservice::V1b\x06proto3"
 
 var (
@@ -1852,64 +2536,89 @@ func file_temporal_api_nexusservices_streamservice_v1_request_response_proto_raw
 	return file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDescData
 }
 
-var file_temporal_api_nexusservices_streamservice_v1_request_response_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_temporal_api_nexusservices_streamservice_v1_request_response_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
+var file_temporal_api_nexusservices_streamservice_v1_request_response_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
 var file_temporal_api_nexusservices_streamservice_v1_request_response_proto_goTypes = []any{
 	(CloseState)(0),                 // 0: temporal.api.nexusservices.streamservice.v1.CloseState
 	(StreamFailureType)(0),          // 1: temporal.api.nexusservices.streamservice.v1.StreamFailureType
 	(WorkflowAppendMode)(0),         // 2: temporal.api.nexusservices.streamservice.v1.WorkflowAppendMode
-	(*StreamRef)(nil),               // 3: temporal.api.nexusservices.streamservice.v1.StreamRef
-	(*WorkflowTaskProducer)(nil),    // 4: temporal.api.nexusservices.streamservice.v1.WorkflowTaskProducer
-	(*LocalActivityProducer)(nil),   // 5: temporal.api.nexusservices.streamservice.v1.LocalActivityProducer
-	(*ClientProducer)(nil),          // 6: temporal.api.nexusservices.streamservice.v1.ClientProducer
-	(*Producer)(nil),                // 7: temporal.api.nexusservices.streamservice.v1.Producer
-	(*ProducerIdentity)(nil),        // 8: temporal.api.nexusservices.streamservice.v1.ProducerIdentity
-	(*AppendRecord)(nil),            // 9: temporal.api.nexusservices.streamservice.v1.AppendRecord
-	(*WorkflowTaskCommit)(nil),      // 10: temporal.api.nexusservices.streamservice.v1.WorkflowTaskCommit
-	(*StreamCreated)(nil),           // 11: temporal.api.nexusservices.streamservice.v1.StreamCreated
-	(*WorkflowAppendModeFixed)(nil), // 12: temporal.api.nexusservices.streamservice.v1.WorkflowAppendModeFixed
-	(*CommitModeAppend)(nil),        // 13: temporal.api.nexusservices.streamservice.v1.CommitModeAppend
-	(*Record)(nil),                  // 14: temporal.api.nexusservices.streamservice.v1.Record
-	(*StreamClose)(nil),             // 15: temporal.api.nexusservices.streamservice.v1.StreamClose
-	(*AppendRequest)(nil),           // 16: temporal.api.nexusservices.streamservice.v1.AppendRequest
-	(*AppendResponse)(nil),          // 17: temporal.api.nexusservices.streamservice.v1.AppendResponse
-	(*ReadRequest)(nil),             // 18: temporal.api.nexusservices.streamservice.v1.ReadRequest
-	(*ReadResponse)(nil),            // 19: temporal.api.nexusservices.streamservice.v1.ReadResponse
-	(*CloseRequest)(nil),            // 20: temporal.api.nexusservices.streamservice.v1.CloseRequest
-	(*CloseResponse)(nil),           // 21: temporal.api.nexusservices.streamservice.v1.CloseResponse
-	(*v1.Payload)(nil),              // 22: temporal.api.common.v1.Payload
-	(*v11.Failure)(nil),             // 23: temporal.api.failure.v1.Failure
-	(*durationpb.Duration)(nil),     // 24: google.protobuf.Duration
+	(StreamMode)(0),                 // 3: temporal.api.nexusservices.streamservice.v1.StreamMode
+	(WakeReason)(0),                 // 4: temporal.api.nexusservices.streamservice.v1.WakeReason
+	(*StreamRef)(nil),               // 5: temporal.api.nexusservices.streamservice.v1.StreamRef
+	(*WorkflowTaskProducer)(nil),    // 6: temporal.api.nexusservices.streamservice.v1.WorkflowTaskProducer
+	(*LocalActivityProducer)(nil),   // 7: temporal.api.nexusservices.streamservice.v1.LocalActivityProducer
+	(*ClientProducer)(nil),          // 8: temporal.api.nexusservices.streamservice.v1.ClientProducer
+	(*Producer)(nil),                // 9: temporal.api.nexusservices.streamservice.v1.Producer
+	(*ProducerIdentity)(nil),        // 10: temporal.api.nexusservices.streamservice.v1.ProducerIdentity
+	(*AppendRecord)(nil),            // 11: temporal.api.nexusservices.streamservice.v1.AppendRecord
+	(*WorkflowTaskCommit)(nil),      // 12: temporal.api.nexusservices.streamservice.v1.WorkflowTaskCommit
+	(*StreamCreated)(nil),           // 13: temporal.api.nexusservices.streamservice.v1.StreamCreated
+	(*WorkflowAppendModeFixed)(nil), // 14: temporal.api.nexusservices.streamservice.v1.WorkflowAppendModeFixed
+	(*CommitModeAppend)(nil),        // 15: temporal.api.nexusservices.streamservice.v1.CommitModeAppend
+	(*Record)(nil),                  // 16: temporal.api.nexusservices.streamservice.v1.Record
+	(*StreamClose)(nil),             // 17: temporal.api.nexusservices.streamservice.v1.StreamClose
+	(*AppendRequest)(nil),           // 18: temporal.api.nexusservices.streamservice.v1.AppendRequest
+	(*AppendResponse)(nil),          // 19: temporal.api.nexusservices.streamservice.v1.AppendResponse
+	(*ReadRequest)(nil),             // 20: temporal.api.nexusservices.streamservice.v1.ReadRequest
+	(*ReadResponse)(nil),            // 21: temporal.api.nexusservices.streamservice.v1.ReadResponse
+	(*StreamModeDeclaration)(nil),   // 22: temporal.api.nexusservices.streamservice.v1.StreamModeDeclaration
+	(*WaitRequest)(nil),             // 23: temporal.api.nexusservices.streamservice.v1.WaitRequest
+	(*NotifierPosition)(nil),        // 24: temporal.api.nexusservices.streamservice.v1.NotifierPosition
+	(*WaitResponse)(nil),            // 25: temporal.api.nexusservices.streamservice.v1.WaitResponse
+	(*NotifierStateRequest)(nil),    // 26: temporal.api.nexusservices.streamservice.v1.NotifierStateRequest
+	(*NotifierStateResponse)(nil),   // 27: temporal.api.nexusservices.streamservice.v1.NotifierStateResponse
+	(*NotifyRequest)(nil),           // 28: temporal.api.nexusservices.streamservice.v1.NotifyRequest
+	(*NotifyResponse)(nil),          // 29: temporal.api.nexusservices.streamservice.v1.NotifyResponse
+	(*CloseRequest)(nil),            // 30: temporal.api.nexusservices.streamservice.v1.CloseRequest
+	(*CloseResponse)(nil),           // 31: temporal.api.nexusservices.streamservice.v1.CloseResponse
+	(*v1.Payload)(nil),              // 32: temporal.api.common.v1.Payload
+	(*v11.Failure)(nil),             // 33: temporal.api.failure.v1.Failure
+	(*durationpb.Duration)(nil),     // 34: google.protobuf.Duration
+	(*timestamppb.Timestamp)(nil),   // 35: google.protobuf.Timestamp
 }
 var file_temporal_api_nexusservices_streamservice_v1_request_response_proto_depIdxs = []int32{
-	6,  // 0: temporal.api.nexusservices.streamservice.v1.Producer.client:type_name -> temporal.api.nexusservices.streamservice.v1.ClientProducer
-	4,  // 1: temporal.api.nexusservices.streamservice.v1.Producer.workflow_task:type_name -> temporal.api.nexusservices.streamservice.v1.WorkflowTaskProducer
-	5,  // 2: temporal.api.nexusservices.streamservice.v1.Producer.local_activity:type_name -> temporal.api.nexusservices.streamservice.v1.LocalActivityProducer
-	22, // 3: temporal.api.nexusservices.streamservice.v1.AppendRecord.payload:type_name -> temporal.api.common.v1.Payload
+	8,  // 0: temporal.api.nexusservices.streamservice.v1.Producer.client:type_name -> temporal.api.nexusservices.streamservice.v1.ClientProducer
+	6,  // 1: temporal.api.nexusservices.streamservice.v1.Producer.workflow_task:type_name -> temporal.api.nexusservices.streamservice.v1.WorkflowTaskProducer
+	7,  // 2: temporal.api.nexusservices.streamservice.v1.Producer.local_activity:type_name -> temporal.api.nexusservices.streamservice.v1.LocalActivityProducer
+	32, // 3: temporal.api.nexusservices.streamservice.v1.AppendRecord.payload:type_name -> temporal.api.common.v1.Payload
 	2,  // 4: temporal.api.nexusservices.streamservice.v1.WorkflowAppendModeFixed.mode:type_name -> temporal.api.nexusservices.streamservice.v1.WorkflowAppendMode
-	9,  // 5: temporal.api.nexusservices.streamservice.v1.CommitModeAppend.records:type_name -> temporal.api.nexusservices.streamservice.v1.AppendRecord
-	8,  // 6: temporal.api.nexusservices.streamservice.v1.Record.producer:type_name -> temporal.api.nexusservices.streamservice.v1.ProducerIdentity
-	22, // 7: temporal.api.nexusservices.streamservice.v1.Record.payload:type_name -> temporal.api.common.v1.Payload
-	10, // 8: temporal.api.nexusservices.streamservice.v1.Record.workflow_task_commit:type_name -> temporal.api.nexusservices.streamservice.v1.WorkflowTaskCommit
-	11, // 9: temporal.api.nexusservices.streamservice.v1.Record.stream_created:type_name -> temporal.api.nexusservices.streamservice.v1.StreamCreated
-	12, // 10: temporal.api.nexusservices.streamservice.v1.Record.workflow_append_mode:type_name -> temporal.api.nexusservices.streamservice.v1.WorkflowAppendModeFixed
+	11, // 5: temporal.api.nexusservices.streamservice.v1.CommitModeAppend.records:type_name -> temporal.api.nexusservices.streamservice.v1.AppendRecord
+	10, // 6: temporal.api.nexusservices.streamservice.v1.Record.producer:type_name -> temporal.api.nexusservices.streamservice.v1.ProducerIdentity
+	32, // 7: temporal.api.nexusservices.streamservice.v1.Record.payload:type_name -> temporal.api.common.v1.Payload
+	12, // 8: temporal.api.nexusservices.streamservice.v1.Record.workflow_task_commit:type_name -> temporal.api.nexusservices.streamservice.v1.WorkflowTaskCommit
+	13, // 9: temporal.api.nexusservices.streamservice.v1.Record.stream_created:type_name -> temporal.api.nexusservices.streamservice.v1.StreamCreated
+	14, // 10: temporal.api.nexusservices.streamservice.v1.Record.workflow_append_mode:type_name -> temporal.api.nexusservices.streamservice.v1.WorkflowAppendModeFixed
 	0,  // 11: temporal.api.nexusservices.streamservice.v1.StreamClose.state:type_name -> temporal.api.nexusservices.streamservice.v1.CloseState
-	23, // 12: temporal.api.nexusservices.streamservice.v1.StreamClose.failure:type_name -> temporal.api.failure.v1.Failure
-	3,  // 13: temporal.api.nexusservices.streamservice.v1.AppendRequest.stream:type_name -> temporal.api.nexusservices.streamservice.v1.StreamRef
-	7,  // 14: temporal.api.nexusservices.streamservice.v1.AppendRequest.producer:type_name -> temporal.api.nexusservices.streamservice.v1.Producer
-	9,  // 15: temporal.api.nexusservices.streamservice.v1.AppendRequest.records:type_name -> temporal.api.nexusservices.streamservice.v1.AppendRecord
-	3,  // 16: temporal.api.nexusservices.streamservice.v1.ReadRequest.stream:type_name -> temporal.api.nexusservices.streamservice.v1.StreamRef
-	24, // 17: temporal.api.nexusservices.streamservice.v1.ReadRequest.wait:type_name -> google.protobuf.Duration
-	14, // 18: temporal.api.nexusservices.streamservice.v1.ReadResponse.records:type_name -> temporal.api.nexusservices.streamservice.v1.Record
-	15, // 19: temporal.api.nexusservices.streamservice.v1.ReadResponse.close:type_name -> temporal.api.nexusservices.streamservice.v1.StreamClose
-	3,  // 20: temporal.api.nexusservices.streamservice.v1.CloseRequest.stream:type_name -> temporal.api.nexusservices.streamservice.v1.StreamRef
-	4,  // 21: temporal.api.nexusservices.streamservice.v1.CloseRequest.owner:type_name -> temporal.api.nexusservices.streamservice.v1.WorkflowTaskProducer
-	15, // 22: temporal.api.nexusservices.streamservice.v1.CloseRequest.close:type_name -> temporal.api.nexusservices.streamservice.v1.StreamClose
-	23, // [23:23] is the sub-list for method output_type
-	23, // [23:23] is the sub-list for method input_type
-	23, // [23:23] is the sub-list for extension type_name
-	23, // [23:23] is the sub-list for extension extendee
-	0,  // [0:23] is the sub-list for field type_name
+	33, // 12: temporal.api.nexusservices.streamservice.v1.StreamClose.failure:type_name -> temporal.api.failure.v1.Failure
+	5,  // 13: temporal.api.nexusservices.streamservice.v1.AppendRequest.stream:type_name -> temporal.api.nexusservices.streamservice.v1.StreamRef
+	9,  // 14: temporal.api.nexusservices.streamservice.v1.AppendRequest.producer:type_name -> temporal.api.nexusservices.streamservice.v1.Producer
+	11, // 15: temporal.api.nexusservices.streamservice.v1.AppendRequest.records:type_name -> temporal.api.nexusservices.streamservice.v1.AppendRecord
+	5,  // 16: temporal.api.nexusservices.streamservice.v1.ReadRequest.stream:type_name -> temporal.api.nexusservices.streamservice.v1.StreamRef
+	34, // 17: temporal.api.nexusservices.streamservice.v1.ReadRequest.wait:type_name -> google.protobuf.Duration
+	16, // 18: temporal.api.nexusservices.streamservice.v1.ReadResponse.records:type_name -> temporal.api.nexusservices.streamservice.v1.Record
+	17, // 19: temporal.api.nexusservices.streamservice.v1.ReadResponse.close:type_name -> temporal.api.nexusservices.streamservice.v1.StreamClose
+	3,  // 20: temporal.api.nexusservices.streamservice.v1.ReadResponse.mode:type_name -> temporal.api.nexusservices.streamservice.v1.StreamMode
+	35, // 21: temporal.api.nexusservices.streamservice.v1.ReadResponse.owner_close_time:type_name -> google.protobuf.Timestamp
+	34, // 22: temporal.api.nexusservices.streamservice.v1.ReadResponse.retention:type_name -> google.protobuf.Duration
+	3,  // 23: temporal.api.nexusservices.streamservice.v1.StreamModeDeclaration.mode:type_name -> temporal.api.nexusservices.streamservice.v1.StreamMode
+	5,  // 24: temporal.api.nexusservices.streamservice.v1.WaitRequest.stream:type_name -> temporal.api.nexusservices.streamservice.v1.StreamRef
+	24, // 25: temporal.api.nexusservices.streamservice.v1.WaitRequest.notifier:type_name -> temporal.api.nexusservices.streamservice.v1.NotifierPosition
+	34, // 26: temporal.api.nexusservices.streamservice.v1.WaitRequest.lifetime:type_name -> google.protobuf.Duration
+	4,  // 27: temporal.api.nexusservices.streamservice.v1.WaitResponse.reason:type_name -> temporal.api.nexusservices.streamservice.v1.WakeReason
+	0,  // 28: temporal.api.nexusservices.streamservice.v1.WaitResponse.owner_end:type_name -> temporal.api.nexusservices.streamservice.v1.CloseState
+	3,  // 29: temporal.api.nexusservices.streamservice.v1.WaitResponse.mode:type_name -> temporal.api.nexusservices.streamservice.v1.StreamMode
+	5,  // 30: temporal.api.nexusservices.streamservice.v1.NotifierStateRequest.stream:type_name -> temporal.api.nexusservices.streamservice.v1.StreamRef
+	24, // 31: temporal.api.nexusservices.streamservice.v1.NotifierStateResponse.position:type_name -> temporal.api.nexusservices.streamservice.v1.NotifierPosition
+	0,  // 32: temporal.api.nexusservices.streamservice.v1.NotifierStateResponse.owner_end:type_name -> temporal.api.nexusservices.streamservice.v1.CloseState
+	5,  // 33: temporal.api.nexusservices.streamservice.v1.NotifyRequest.stream:type_name -> temporal.api.nexusservices.streamservice.v1.StreamRef
+	5,  // 34: temporal.api.nexusservices.streamservice.v1.CloseRequest.stream:type_name -> temporal.api.nexusservices.streamservice.v1.StreamRef
+	6,  // 35: temporal.api.nexusservices.streamservice.v1.CloseRequest.owner:type_name -> temporal.api.nexusservices.streamservice.v1.WorkflowTaskProducer
+	17, // 36: temporal.api.nexusservices.streamservice.v1.CloseRequest.close:type_name -> temporal.api.nexusservices.streamservice.v1.StreamClose
+	37, // [37:37] is the sub-list for method output_type
+	37, // [37:37] is the sub-list for method input_type
+	37, // [37:37] is the sub-list for extension type_name
+	37, // [37:37] is the sub-list for extension extendee
+	0,  // [0:37] is the sub-list for field type_name
 }
 
 func init() { file_temporal_api_nexusservices_streamservice_v1_request_response_proto_init() }
@@ -1928,8 +2637,8 @@ func file_temporal_api_nexusservices_streamservice_v1_request_response_proto_ini
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDesc), len(file_temporal_api_nexusservices_streamservice_v1_request_response_proto_rawDesc)),
-			NumEnums:      3,
-			NumMessages:   19,
+			NumEnums:      5,
+			NumMessages:   27,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
