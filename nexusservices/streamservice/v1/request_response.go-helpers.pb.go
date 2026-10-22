@@ -44,6 +44,43 @@ func (this *StreamRef) Equal(that interface{}) bool {
 	return proto.Equal(this, that1)
 }
 
+// Marshal an object of type StreamSettings to the protobuf v3 wire format
+func (val *StreamSettings) Marshal() ([]byte, error) {
+	return proto.Marshal(val)
+}
+
+// Unmarshal an object of type StreamSettings from the protobuf v3 wire format
+func (val *StreamSettings) Unmarshal(buf []byte) error {
+	return proto.Unmarshal(buf, val)
+}
+
+// Size returns the size of the object, in bytes, once serialized
+func (val *StreamSettings) Size() int {
+	return proto.Size(val)
+}
+
+// Equal returns whether two StreamSettings values are equivalent by recursively
+// comparing the message's fields.
+// For more information see the documentation for
+// https://pkg.go.dev/google.golang.org/protobuf/proto#Equal
+func (this *StreamSettings) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	var that1 *StreamSettings
+	switch t := that.(type) {
+	case *StreamSettings:
+		that1 = t
+	case StreamSettings:
+		that1 = &t
+	default:
+		return false
+	}
+
+	return proto.Equal(this, that1)
+}
+
 // Marshal an object of type WorkflowTaskProducer to the protobuf v3 wire format
 func (val *WorkflowTaskProducer) Marshal() ([]byte, error) {
 	return proto.Marshal(val)
@@ -710,6 +747,80 @@ func (this *CloseResponse) Equal(that interface{}) bool {
 	return proto.Equal(this, that1)
 }
 
+// Marshal an object of type CreateRequest to the protobuf v3 wire format
+func (val *CreateRequest) Marshal() ([]byte, error) {
+	return proto.Marshal(val)
+}
+
+// Unmarshal an object of type CreateRequest from the protobuf v3 wire format
+func (val *CreateRequest) Unmarshal(buf []byte) error {
+	return proto.Unmarshal(buf, val)
+}
+
+// Size returns the size of the object, in bytes, once serialized
+func (val *CreateRequest) Size() int {
+	return proto.Size(val)
+}
+
+// Equal returns whether two CreateRequest values are equivalent by recursively
+// comparing the message's fields.
+// For more information see the documentation for
+// https://pkg.go.dev/google.golang.org/protobuf/proto#Equal
+func (this *CreateRequest) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	var that1 *CreateRequest
+	switch t := that.(type) {
+	case *CreateRequest:
+		that1 = t
+	case CreateRequest:
+		that1 = &t
+	default:
+		return false
+	}
+
+	return proto.Equal(this, that1)
+}
+
+// Marshal an object of type CreateResponse to the protobuf v3 wire format
+func (val *CreateResponse) Marshal() ([]byte, error) {
+	return proto.Marshal(val)
+}
+
+// Unmarshal an object of type CreateResponse from the protobuf v3 wire format
+func (val *CreateResponse) Unmarshal(buf []byte) error {
+	return proto.Unmarshal(buf, val)
+}
+
+// Size returns the size of the object, in bytes, once serialized
+func (val *CreateResponse) Size() int {
+	return proto.Size(val)
+}
+
+// Equal returns whether two CreateResponse values are equivalent by recursively
+// comparing the message's fields.
+// For more information see the documentation for
+// https://pkg.go.dev/google.golang.org/protobuf/proto#Equal
+func (this *CreateResponse) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	var that1 *CreateResponse
+	switch t := that.(type) {
+	case *CreateResponse:
+		that1 = t
+	case CreateResponse:
+		that1 = &t
+	default:
+		return false
+	}
+
+	return proto.Equal(this, that1)
+}
+
 var (
 	CloseState_shorthandValue = map[string]int32{
 		"Unspecified": 0,
@@ -747,6 +858,7 @@ var (
 		"SeqGap":                     10,
 		"TooLarge":                   11,
 		"WorkflowAppendModeMismatch": 12,
+		"SettingsMismatch":           13,
 	}
 )
 
